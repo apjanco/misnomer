@@ -1,0 +1,42 @@
+[project]
+name = "misnomer"
+version = "0.1.0"
+description = "Semantic error measurement for OCR/HTR output"
+readme = "README.md"
+authors = [
+    { name = "apjanco", email = "apjanco@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "huggingface-hub>=1.11.0",
+    "numpy>=2.4.4",
+    "pydantic>=2.13.3",
+    "rapidfuzz>=3.14.5",
+    "typer>=0.24.1",
+]
+
+[project.scripts]
+misnomer = "misnomer.cli:app"
+
+[project.optional-dependencies]
+model = [
+    "sentence-transformers>=5.4.1",
+    "torch>=2.0.0",
+    "transformers>=5.5.4",
+]
+multilingual = [
+    "sentence-transformers>=5.4.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.20.2",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.11",
+]
+
