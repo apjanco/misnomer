@@ -15,7 +15,7 @@ class WordScore(BaseModel):
     alignment_type: AlignmentType
     error_type: ErrorType | None = None
     perplexity: float | None = None
-    embedding_similarity: float = Field(default=1.0, ge=0.0, le=1.0)
+    embedding_similarity: float | None = Field(default=None, ge=0.0, le=1.0)
     composite_score: float = Field(default=0.0, ge=0.0, le=1.0)
     char_edit_distance: int = Field(default=0, ge=0)
 

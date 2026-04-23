@@ -24,8 +24,9 @@ def test_normalize_perplexities_empty() -> None:
 
 
 def test_normalize_perplexities_uniform() -> None:
+    # Degenerate range: returns neutral midpoint so signal isn't silently zeroed.
     result = normalize_perplexities([3.0, 3.0, 3.0])
-    assert result == [0.0, 0.0, 0.0]
+    assert result == [0.5, 0.5, 0.5]
 
 
 def test_normalize_perplexities_range() -> None:

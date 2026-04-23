@@ -245,9 +245,9 @@ Alignment output is a list of `(predicted_word, ground_truth_word, alignment_typ
 
 For each substituted word pair, the ground truth word's perplexity is computed in the context of the surrounding ground truth sentence. This requires a single forward pass over the ground truth text with the internal LM.
 
-Token-to-word aggregation: average logprob across tokens belonging to a word, normalized by character length of the word (not token count) to avoid penalizing long words.
+Token-to-word aggregation: average logprob across tokens belonging to a word.
 
-Perplexity per word: `exp(-avg_logprob_per_char)`
+Perplexity per word: `exp(-avg_logprob)` (standard per-token perplexity)
 
 ### 6.3 Semantic Distance (`models/embedder.py`)
 
@@ -263,12 +263,12 @@ High similarity (close to 1.0) \= semantic error candidate. Low similarity (clos
 
 The composite score per substituted word pair combines perplexity and embedding similarity:
 
-composite \= w1 \* normalized\_perplexity \+ w2 \* (1 \- embedding\_similarity)
+composite \= w1 \* normalized\_perplexity \+ w2 \* embedding\_similarity
 
 Where:
 
 - `normalized_perplexity` is the GT word's perplexity, clipped and normalized to \[0, 1\] relative to the document's perplexity range  
-- `1 - embedding_similarity` is the semantic error contribution (high similarity \= high error)  
+- `embedding_similarity` is the semantic closeness contribution (high similarity \= likely to pass human review)  
 - Default weights: `w1 = 0.4`, `w2 = 0.6` (configurable)
 
 Note: a high composite score indicates a concerning substitution. A semantically close substitution that surprised the LM (high perplexity, high embedding similarity) scores highest.
@@ -289,7 +289,7 @@ The package supports three operational tiers depending on what information is av
 | **Standard** | Remote API, predicted logprobs only | Internal LM perplexity only (OCR confidence not used) |
 | **Text-only** | No logprobs available | Embedding distance \+ char edit distance only; no perplexity |
 
-Text-only mode is weaker but still classifies SEMANTIC vs OBVIOUS errors and produces a meaningful composite score.
+Text-only mode uses only the perplexity proxy signal. `embedding_similarity` is not computed and `error_type` is not assigned for substitutions; the composite score is derived from perplexity alone.
 
 ---
 

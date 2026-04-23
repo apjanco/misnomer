@@ -33,7 +33,7 @@ def score(
     embedder = Embedder(cfg)
 
     # Determine operational tier based on available backends.
-    if lm.is_transformer_backed and embedder._model is not None:
+    if lm.is_transformer_backed and embedder.is_model_backed:
         scorer_mode: ScorerMode = "full"
     elif lm.is_transformer_backed:
         scorer_mode = "standard"
@@ -81,11 +81,16 @@ def score(
 
         if item.alignment_type == "SUBSTITUTION":
             substitutions += 1
-            similarity = embedder.similarity(item.predicted_word, item.ground_truth_word)
-            error_type = classify_substitution(similarity, cfg.semantic_threshold)
             perplexity = substitution_raw_perplexities[subst_cursor]
             normalized_perplexity = substitution_norm_perplexities[subst_cursor]
             subst_cursor += 1
+
+            if embedder.is_model_backed:
+                similarity: float | None = embedder.similarity(item.predicted_word, item.ground_truth_word)
+                error_type = classify_substitution(similarity, cfg.semantic_threshold)
+            else:
+                similarity = None
+                error_type = None
 
             score_value = composite_score(
                 normalized_perplexity,
@@ -149,8 +154,8 @@ def score(
         predicted_text=predicted,
         ground_truth_text=ground_truth,
         scorer_version=cfg.scorer_version,
-        lm_model=cfg.lm_model,
-        embedder_model=cfg.resolved_embedder_model(),
+        lm_model=lm.resolved_model_name,
+        embedder_model=embedder.resolved_model_name,
         scorer_mode=scorer_mode,
         word_scores=word_scores,
         document_score=document_score,
@@ -162,20 +167,24 @@ def score(
 
 
 def score_batch(
-    pairs: list[tuple[str, str]],
+    pairs: list[tuple[str, str]] | list[tuple[str, str, dict]],
     scorer_version: str = "1.0",
     metadata: dict[str, object] | None = None,
     config: ScorerConfig | None = None,
 ) -> list[SemanticErrorReport]:
     cfg = config or ScorerConfig(scorer_version=scorer_version)
-    return [
-        score(
-            predicted=pred,
-            ground_truth=gt,
-            scorer_version=cfg.scorer_version,
-            metadata=metadata,
-            config=cfg,
+    reports = []
+    for pair in pairs:
+        pred, gt = pair[0], pair[1]
+        pair_meta: dict[str, object] = dict(pair[2]) if len(pair) > 2 else (metadata or {})  # type: ignore[misc]
+        reports.append(
+            score(
+                predicted=pred,
+                ground_truth=gt,
+                scorer_version=cfg.scorer_version,
+                metadata=pair_meta,
+                config=cfg,
+            )
         )
-        for pred, gt in pairs
-    ]
+    return reports
 
