@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 import math
 from collections import Counter
 
 from misnomer.config import ScorerConfig
+
+log = logging.getLogger(__name__)
 
 
 class LMScorer:
@@ -33,7 +36,9 @@ class LMScorer:
             )
             self._model.eval()
             self._torch = torch
-        except Exception:
+        except (ImportError, OSError, ValueError) as exc:
+            log.warning("LMScorer: could not load %r (%s: %s); falling back to frequency proxy.",
+                        self.model_name, type(exc).__name__, exc)
             self._model = None
             self._tokenizer = None
             self._torch = None
@@ -41,6 +46,10 @@ class LMScorer:
     @property
     def is_transformer_backed(self) -> bool:
         return self._model is not None
+
+    @property
+    def resolved_model_name(self) -> str:
+        return self.model_name if self._model is not None else "frequency-proxy"
 
     def word_perplexities(self, ground_truth_words: list[str]) -> dict[int, float]:
         if self._model is not None and self._tokenizer is not None:
@@ -100,7 +109,7 @@ class LMScorer:
             valid_lps = [lp for lp in token_log_probs if lp is not None]
             avg_lp = sum(valid_lps) / max(1, len(valid_lps))
             for word_idx, word in enumerate(ground_truth_words):
-                result[word_idx] = math.exp(-avg_lp / max(1, len(word)))
+                result[word_idx] = math.exp(-avg_lp)
 
         return result
 
@@ -121,11 +130,8 @@ class LMScorer:
     def _perplexity_from_logprobs(word: str, logprobs: list[float]) -> float:
         if not logprobs:
             return 1.0
-        char_len = max(1, len(word))
         avg_logprob = sum(logprobs) / len(logprobs)
-        # Normalize by character length to avoid penalising long words.
-        avg_logprob_per_char = avg_logprob / char_len
-        return math.exp(-avg_logprob_per_char)
+        return math.exp(-avg_logprob)
 
     # ------------------------------------------------------------------
     # Deterministic proxy (used when transformers/torch unavailable)
@@ -138,7 +144,6 @@ class LMScorer:
         for idx, word in enumerate(ground_truth_words):
             freq = counts[word]
             rarity = math.log1p(total / max(1, freq))
-            length_factor = 1.0 + (len(word) / 20.0)
-            result[idx] = rarity * length_factor
+            result[idx] = rarity
         return result
 
