@@ -245,19 +245,21 @@ Alignment output is a list of `(predicted_word, ground_truth_word, alignment_typ
 
 For each substituted word pair, the ground truth word's perplexity is computed in the context of the surrounding ground truth sentence. This requires a single forward pass over the ground truth text with the internal LM.
 
-Token-to-word aggregation: average logprob across tokens belonging to a word.
+**Token-to-word aggregation:** only the *first* token in the word's span is used. The LM predicts this token purely from context — it is the token that reflects genuine contextual surprisal. Subsequent tokens in a multi-token word are within-word continuations already conditioned on the word having started; they are near-certain predictions that inflate the per-token average log-probability toward zero, deflating perplexity for longer words. Using only the first token avoids this length bias.
 
-Perplexity per word: `exp(-avg_logprob)` (standard per-token perplexity)
+Perplexity per word: `exp(-logprob_of_first_token)`
+
+**Normalization:** raw perplexity is mapped to `[0, 1]` using an absolute log-scale ceiling of `exp(13.8) ≈ 1,000,000`. This preserves the signal for documents with a single substitution (relative min/max normalization collapses to a constant in that case) and makes scores comparable across documents.
 
 ### 6.3 Semantic Distance (`models/embedder.py`)
 
-Word-level embeddings are computed for both predicted and ground truth words using the internal sentence-transformer. Cosine similarity is computed between the two embeddings.
+Word-level embeddings are computed for both predicted and ground truth words using the internal sentence-transformer. To give the model sufficient distributional context — bare single-word inputs produce unreliable embeddings for short or rare words — each word is wrapped in a minimal sentence frame before encoding:
 
-`embedding_similarity = cosine_similarity(embed(predicted_word), embed(ground_truth_word))`
+`embedding_similarity = cosine_similarity(encode("A {predicted_word}."), encode("A {ground_truth_word}."))`
 
 High similarity (close to 1.0) \= semantic error candidate. Low similarity (close to 0.0) \= obvious error candidate.
 
-**Threshold for SEMANTIC vs OBVIOUS:** `embedding_similarity Ã¢â€°Â¥ 0.5` Ã¢â€ â€™ SEMANTIC. Below Ã¢â€ â€™ OBVIOUS. This threshold is configurable.
+**Threshold for SEMANTIC vs OBVIOUS:** `embedding_similarity ≥ 0.35` → SEMANTIC. Below → OBVIOUS. This threshold is calibrated for frame-encoded word-level similarity with `all-MiniLM-L6-v2` and is configurable.
 
 ### 6.4 Composite Score (`composite.py`)
 
@@ -267,7 +269,7 @@ composite \= w1 \* normalized\_perplexity \+ w2 \* embedding\_similarity
 
 Where:
 
-- `normalized_perplexity` is the GT word's perplexity, clipped and normalized to \[0, 1\] relative to the document's perplexity range  
+- `normalized_perplexity` is `log(ppl) / log(1_000_000)`, clipped to \[0, 1\] — an absolute log-scale normalization that preserves signal for single-substitution documents and enables cross-document comparison  
 - `embedding_similarity` is the semantic closeness contribution (high similarity \= likely to pass human review)  
 - Default weights: `w1 = 0.4`, `w2 = 0.6` (configurable)
 

@@ -8,7 +8,7 @@ class ScorerConfig(BaseModel):
     lm_model: str = "Qwen/Qwen2.5-0.5B"
     embedder_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     multilingual_embedder_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-    semantic_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+    semantic_threshold: float = Field(default=0.35, ge=0.0, le=1.0)
     perplexity_weight: float = Field(default=0.4, ge=0.0, le=1.0)
     semantic_weight: float = Field(default=0.6, ge=0.0, le=1.0)
     local_files_only: bool = True

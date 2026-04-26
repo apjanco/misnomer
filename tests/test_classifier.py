@@ -24,16 +24,28 @@ def test_normalize_perplexities_empty() -> None:
 
 
 def test_normalize_perplexities_uniform() -> None:
-    # Degenerate range: returns neutral midpoint so signal isn't silently zeroed.
+    # Absolute log-scale: uniform inputs all map to the same non-zero value.
+    import math
     result = normalize_perplexities([3.0, 3.0, 3.0])
-    assert result == [0.5, 0.5, 0.5]
+    expected = math.log(3.0) / math.log(1_000_000)
+    assert all(abs(v - expected) < 1e-9 for v in result)
 
 
 def test_normalize_perplexities_range() -> None:
-    result = normalize_perplexities([1.0, 3.0, 5.0])
-    assert result[0] == 0.0
-    assert result[-1] == 1.0
-    assert 0.0 < result[1] < 1.0
+    # Higher perplexity → higher normalized value (monotone).
+    result = normalize_perplexities([1.0, 100.0, 10_000.0])
+    assert result[0] < result[1] < result[2]
+    assert 0.0 <= result[0] <= 1.0
+    assert result[-1] <= 1.0
+
+
+def test_normalize_perplexities_single_value() -> None:
+    # Single-substitution doc: must NOT collapse to 0.5.
+    import math
+    result = normalize_perplexities([63393.4])
+    assert len(result) == 1
+    assert result[0] != 0.5
+    assert result[0] > 0.5  # high perplexity → well above midpoint
 
 
 def test_composite_score_clipped() -> None:
@@ -42,7 +54,11 @@ def test_composite_score_clipped() -> None:
 
 
 def test_lm_scorer_proxy_returns_all_indices() -> None:
-    cfg = ScorerConfig(local_files_only=True, allow_download=False)
+    cfg = ScorerConfig(
+        lm_model="nonexistent/model-does-not-exist",
+        local_files_only=True,
+        allow_download=False,
+    )
     lm = LMScorer(cfg)
     words = ["The", "house", "stood", "in", "the", "field"]
     perplexities = lm.word_perplexities(words)
@@ -51,7 +67,11 @@ def test_lm_scorer_proxy_returns_all_indices() -> None:
 
 
 def test_lm_scorer_rare_word_higher_perplexity() -> None:
-    cfg = ScorerConfig(local_files_only=True, allow_download=False)
+    cfg = ScorerConfig(
+        lm_model="nonexistent/model-does-not-exist",
+        local_files_only=True,
+        allow_download=False,
+    )
     lm = LMScorer(cfg)
     # When using the proxy, rare words get higher perplexity.
     words = ["the", "the", "the", "serendipitous"]
