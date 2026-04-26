@@ -48,6 +48,11 @@ class LMScorer:
         return self._model is not None
 
     @property
+    def tokenizer(self):
+        """The loaded HuggingFace tokenizer, or ``None`` when in proxy mode."""
+        return self._tokenizer
+
+    @property
     def resolved_model_name(self) -> str:
         return self.model_name if self._model is not None else "frequency-proxy"
 
@@ -94,16 +99,19 @@ class LMScorer:
         if offset_mapping is not None:
             offsets = offset_mapping[0].tolist()  # list of [start, end]
             for word_idx, (w_start, w_end) in enumerate(word_spans):
-                gathered: list[float] = []
+                first_lp: float | None = None
                 for tok_idx in range(1, seq_len):
                     tok_start, tok_end = offsets[tok_idx]
-                    # Include token if it overlaps with the word span.
+                    # Use only the first token whose span overlaps the word.
+                    # Subsequent tokens are within-word continuations conditioned
+                    # on the word already being started — near-certain predictions
+                    # that dilute the contextual surprisal signal when averaged.
                     if tok_end > w_start and tok_start < w_end:
                         lp = token_log_probs[tok_idx]
                         if lp is not None:
-                            gathered.append(lp)
-                word = ground_truth_words[word_idx]
-                result[word_idx] = self._perplexity_from_logprobs(word, gathered)
+                            first_lp = lp
+                        break  # only the first overlapping token
+                result[word_idx] = self._perplexity_from_logprob(first_lp)
         else:
             # Slow tokenizer fallback: distribute logprobs equally across words.
             valid_lps = [lp for lp in token_log_probs if lp is not None]
@@ -127,11 +135,17 @@ class LMScorer:
         return spans
 
     @staticmethod
-    def _perplexity_from_logprobs(word: str, logprobs: list[float]) -> float:
-        if not logprobs:
+    def _perplexity_from_logprob(logprob: float | None) -> float:
+        """Convert a single token log-probability to perplexity.
+
+        Only the first token of a word's span is used — it is the one the LM
+        predicts purely from context.  Within-word continuation tokens are
+        conditioned on the word already being started and inflate the average
+        log-prob toward zero, deflating perplexity for multi-token words.
+        """
+        if logprob is None:
             return 1.0
-        avg_logprob = sum(logprobs) / len(logprobs)
-        return math.exp(-avg_logprob)
+        return math.exp(-logprob)
 
     # ------------------------------------------------------------------
     # Deterministic proxy (used when transformers/torch unavailable)

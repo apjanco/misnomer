@@ -85,8 +85,8 @@ misnomer version
 
 | Signal | Method |
 |--------|--------|
-| **Perplexity** | Causal LM forward pass (default: `Qwen/Qwen2.5-0.5B`) — how surprising is the ground truth word in context? |
-| **Semantic distance** | Sentence-transformer cosine similarity (default: `all-MiniLM-L6-v2`) — how close is the predicted word to the ground truth word? |
+| **Perplexity** | Causal LM forward pass (default: `Qwen/Qwen2.5-0.5B`) — how surprising is the ground truth word in context? Only the first token of each word is used; within-word continuation tokens are excluded to avoid deflating perplexity for multi-token words. |
+| **Semantic distance** | Sentence-transformer cosine similarity (default: `all-MiniLM-L6-v2`) — how close is the predicted word to the ground truth word? Words are encoded as `"A {word}."` to provide minimal sentence context; bare single-word encoding produces unreliable embeddings for short or rare words. |
 
 These combine into a composite score per substituted word pair:
 
@@ -94,29 +94,33 @@ These combine into a composite score per substituted word pair:
 composite = 0.4 × normalized_perplexity + 0.6 × embedding_similarity
 ```
 
-A high score indicates a concerning substitution: semantically close to the correct word (easy to miss) and surprising to the LM (contextually unlikely to appear by chance).
+Perplexity is normalized on an absolute log scale (`log(ppl) / log(1_000_000)`) so that single-substitution documents retain a meaningful signal and scores are comparable across documents.
+
+A high composite score indicates a concerning substitution: semantically close to the correct word (easy to miss) and surprising to the LM (contextually unlikely to appear by chance).
 
 ### Error taxonomy
 
 | Type | Description |
 |------|-------------|
-| `SEMANTIC` | Substitution with high embedding similarity to ground truth; likely to pass human review |
-| `OBVIOUS` | Substitution with low embedding similarity; detectable on reading |
+| `SEMANTIC` | Substitution with embedding similarity ≥ 0.35 to ground truth; likely to pass human review |
+| `OBVIOUS` | Substitution with embedding similarity < 0.35; detectable on reading |
 | `INSERTION` | Word present in prediction, absent in ground truth |
 | `DELETION` | Word present in ground truth, absent in prediction |
 | `MATCH` | Correct transcription |
+
+> **Note on `text_only` mode:** when the sentence-transformer is unavailable, `error_type` is `None` for all substitutions and neither `semantic_error_count` nor `obvious_error_count` is incremented. The composite score is derived from the perplexity proxy alone.
 
 ### Operational tiers
 
 `misnomer` degrades gracefully depending on installed dependencies:
 
-| Mode | Condition | Perplexity source |
-|------|-----------|-------------------|
-| `full` | `transformers` + `torch` + `sentence-transformers` installed, model cached | Transformer LM forward pass |
-| `standard` | `transformers` + `torch` installed, no `sentence-transformers` | Transformer LM; embedding falls back to char similarity |
-| `text_only` | No transformer dependencies | Frequency-based proxy; embedding falls back to char similarity |
+| Mode | Condition | Perplexity source | Embedding source |
+|------|-----------|-------------------|------------------|
+| `full` | `transformers` + `torch` + `sentence-transformers` installed, model cached | Transformer LM (first token per word) | Sentence-transformer (frame-encoded) |
+| `standard` | `transformers` + `torch` installed, no `sentence-transformers` | Transformer LM (first token per word) | None — `error_type` not assigned |
+| `text_only` | No transformer dependencies | Frequency-based proxy | None — `error_type` not assigned |
 
-The active mode is reported in `SemanticErrorReport.scorer_mode`.
+The active mode is reported in `SemanticErrorReport.scorer_mode`. The `lm_model` and `embedder_model` fields in every report name what was *actually used* (e.g. `"frequency-proxy"`, `"rapidfuzz-char-similarity"`), not the configured model names.
 
 ## Scorer versioning
 

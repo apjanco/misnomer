@@ -38,7 +38,13 @@ class Embedder:
         if self._model is None:
             return ratio(left, right) / 100.0
 
-        embeddings = self._model.encode([left, right], normalize_embeddings=True)
+        # Wrap bare words in a minimal sentence frame so the sentence-transformer
+        # has enough context to produce meaningful semantic embeddings.
+        # Bare single-word encoding loses distributional context and inverts
+        # synonym/near-homograph ordering (e.g. steed < house vs horse).
+        left_frame = f"A {left}." if left else left
+        right_frame = f"A {right}." if right else right
+        embeddings = self._model.encode([left_frame, right_frame], normalize_embeddings=True)
         score = float((embeddings[0] * embeddings[1]).sum())
         return max(0.0, min(1.0, score))
 

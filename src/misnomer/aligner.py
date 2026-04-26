@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from rapidfuzz.distance import Levenshtein
+
+# Strips leading/trailing non-word characters (punctuation, whitespace).
+# Applied after grouping so that "Macleod," → "Macleod" and "," → "" (filtered).
+_BOUNDARY_RE = re.compile(r"^\W+|\W+$")
 
 
 @dataclass(frozen=True)
@@ -12,13 +17,96 @@ class AlignmentItem:
     alignment_type: str
 
 
-def tokenize_words(text: str) -> list[str]:
-    return [tok for tok in text.strip().split() if tok]
+def _tokenize_with_hf(text: str, tokenizer) -> list[str]:
+    """Group HuggingFace subword tokens into words using character offsets.
+
+    Detects word boundaries by checking for whitespace gaps between adjacent
+    token spans — robust across GPT-2-style (Ġ), SentencePiece (▁), and
+    BERT (##-suffix) tokenizers.  Falls back to Ġ/▁ prefix heuristic for
+    slow tokenizers that do not support ``return_offsets_mapping``.
+
+    After grouping, strips leading/trailing non-word characters from each
+    group (e.g. "Macleod," → "Macleod") and discards punctuation-only
+    groups (e.g. "," → "").
+    """
+    enc = tokenizer(text, add_special_tokens=False, return_offsets_mapping=True)
+    offsets = enc.get("offset_mapping")
+
+    if offsets is not None:
+        words: list[str] = []
+        w_start: int | None = None
+        w_end: int | None = None
+        for start, end in offsets:
+            if start == end:  # zero-length token (e.g. padding placeholder)
+                continue
+            # Byte-level BPE (Qwen2.5 / GPT-2 style) encodes the preceding
+            # space *inside* the next token, so " horse" has offset (3, 9) —
+            # flush-adjacent to "The" at (0, 3) with no numeric gap.
+            # Detect this by checking whether text[start] is whitespace.
+            is_new_word = (
+                w_end is None
+                or start > w_end
+                or (start == w_end and start < len(text) and text[start].isspace())
+            )
+            if is_new_word:
+                if w_start is not None:
+                    stripped = _BOUNDARY_RE.sub("", text[w_start:w_end])
+                    if stripped:
+                        words.append(stripped)
+                w_start, w_end = start, end
+            else:
+                w_end = end  # continuation: extend current word span
+        if w_start is not None:
+            stripped = _BOUNDARY_RE.sub("", text[w_start:w_end])
+            if stripped:
+                words.append(stripped)
+        return words
+
+    # Slow tokenizer fallback: detect word boundaries via Ġ / ▁ prefix.
+    tokens = tokenizer.convert_ids_to_tokens(enc["input_ids"])
+    words = []
+    current: list[str] = []
+    for tok in tokens:
+        if tok.startswith(("\u0120", "\u2581")) and current:  # Ġ or ▁ → new word
+            stripped = _BOUNDARY_RE.sub("", "".join(current))
+            if stripped:
+                words.append(stripped)
+            current = []
+        current.append(tok.lstrip("\u0120\u2581"))
+    if current:
+        stripped = _BOUNDARY_RE.sub("", "".join(current))
+        if stripped:
+            words.append(stripped)
+    return words
 
 
-def align_words(predicted_text: str, ground_truth_text: str) -> list[AlignmentItem]:
-    pred = tokenize_words(predicted_text)
-    gt = tokenize_words(ground_truth_text)
+def tokenize_words(text: str, tokenizer=None) -> list[str]:
+    """Split *text* into a list of content words, discarding punctuation tokens.
+
+    When a HuggingFace *tokenizer* is supplied the split follows the model's
+    own byte-pair / sentencepiece boundaries, ensuring word spans are
+    consistent with those used for perplexity computation.  Without a
+    tokenizer a whitespace split is used and boundary punctuation is stripped
+    from each token.
+    """
+    if tokenizer is not None:
+        return _tokenize_with_hf(text, tokenizer)
+    # Whitespace split + strip leading/trailing non-word characters.
+    tokens = []
+    for tok in text.strip().split():
+        stripped = _BOUNDARY_RE.sub("", tok)
+        if stripped:
+            tokens.append(stripped)
+    return tokens
+
+
+def align_words(
+    predicted_text: str,
+    ground_truth_text: str,
+    tokenizer=None,
+) -> list[AlignmentItem]:
+    pred = tokenize_words(predicted_text, tokenizer)
+    gt = tokenize_words(ground_truth_text, tokenizer)
 
     m, n = len(pred), len(gt)
     dp = [[0] * (n + 1) for _ in range(m + 1)]

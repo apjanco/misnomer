@@ -1,16 +1,26 @@
 from __future__ import annotations
 
+import math
+
+# Absolute ceiling for log-scale perplexity normalization.
+# exp(13.8) ≈ 1_000_000 — perplexities above this are treated as maximally surprising.
+_LOG_PPL_MAX = math.log(1_000_000)
+
 
 def normalize_perplexities(perplexities: list[float]) -> list[float]:
+    """Map raw perplexities to [0, 1] using an absolute log scale.
+
+    Each value is normalized independently against a fixed ceiling so that:
+    - Single-substitution documents retain a meaningful signal (no more forced 0.5).
+    - Scores are comparable across documents.
+    - Very high-perplexity (completely surprising) words approach 1.0.
+    """
     if not perplexities:
         return []
-    low = min(perplexities)
-    high = max(perplexities)
-    if high <= low:
-        # Degenerate range: all values identical; use neutral midpoint rather than 0
-        # so the perplexity signal doesn't silently vanish from composite scores.
-        return [0.5 for _ in perplexities]
-    return [(p - low) / (high - low) for p in perplexities]
+    return [
+        min(1.0, max(0.0, math.log(max(1.0, p)) / _LOG_PPL_MAX))
+        for p in perplexities
+    ]
 
 
 def composite_score(

@@ -22,14 +22,14 @@ def score(
     config: ScorerConfig | None = None,
 ) -> SemanticErrorReport:
     cfg = config or ScorerConfig(scorer_version=scorer_version)
-    alignment = align_words(predicted, ground_truth)
+    lm = LMScorer(cfg)
+    alignment = align_words(predicted, ground_truth, tokenizer=lm.tokenizer)
 
-    gt_words = tokenize_words(ground_truth)
+    gt_words = tokenize_words(ground_truth, tokenizer=lm.tokenizer)
     gt_counts: dict[str, int] = {}
     for w in gt_words:
         gt_counts[w] = gt_counts.get(w, 0) + 1
 
-    lm = LMScorer(cfg)
     embedder = Embedder(cfg)
 
     # Determine operational tier based on available backends.
@@ -101,7 +101,7 @@ def score(
 
             if error_type == "SEMANTIC":
                 semantic_error_count += 1
-            else:
+            elif error_type == "OBVIOUS":
                 obvious_error_count += 1
 
             wt = _frequency_weight(item.ground_truth_word, gt_counts)
