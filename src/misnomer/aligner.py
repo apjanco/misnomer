@@ -80,7 +80,7 @@ def _tokenize_with_hf(text: str, tokenizer) -> list[str]:
     return words
 
 
-def tokenize_words(text: str, tokenizer=None) -> list[str]:
+def tokenize_words(text: str | None, tokenizer=None) -> list[str]:
     """Split *text* into a list of content words, discarding punctuation tokens.
 
     When a HuggingFace *tokenizer* is supplied the split follows the model's
@@ -89,6 +89,8 @@ def tokenize_words(text: str, tokenizer=None) -> list[str]:
     tokenizer a whitespace split is used and boundary punctuation is stripped
     from each token.
     """
+    if not text or not text.strip():
+        return []
     if tokenizer is not None:
         return _tokenize_with_hf(text, tokenizer)
     # Whitespace split + strip leading/trailing non-word characters.

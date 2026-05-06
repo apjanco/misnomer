@@ -15,12 +15,14 @@ def _frequency_weight(word: str, counts: dict[str, int]) -> float:
 
 
 def score(
-    predicted: str,
-    ground_truth: str,
+    predicted: str | None,
+    ground_truth: str | None,
     scorer_version: str = "1.0",
     metadata: dict[str, object] | None = None,
     config: ScorerConfig | None = None,
 ) -> SemanticErrorReport:
+    predicted = predicted or ""
+    ground_truth = ground_truth or ""
     cfg = config or ScorerConfig(scorer_version=scorer_version)
     lm = LMScorer(cfg)
     alignment = align_words(predicted, ground_truth, tokenizer=lm.tokenizer)

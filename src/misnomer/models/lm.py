@@ -57,6 +57,8 @@ class LMScorer:
         return self.model_name if self._model is not None else "frequency-proxy"
 
     def word_perplexities(self, ground_truth_words: list[str]) -> dict[int, float]:
+        if not ground_truth_words:
+            return {}
         if self._model is not None and self._tokenizer is not None:
             return self._transformer_perplexities(ground_truth_words)
         return self._proxy_perplexities(ground_truth_words)
@@ -77,6 +79,10 @@ class LMScorer:
             return_offsets_mapping=True,
         )
         input_ids = enc["input_ids"]  # (1, seq_len)
+
+        # Guard: a model with seq_len==0 (empty text) cannot be forward-passed.
+        if input_ids.shape[1] == 0:
+            return {i: 1.0 for i in range(len(ground_truth_words))}
         # offset_mapping may be absent for slow tokenizers.
         offset_mapping = enc.get("offset_mapping")
 

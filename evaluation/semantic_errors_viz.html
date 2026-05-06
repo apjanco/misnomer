@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SEMANTIC ERROR REPORT // ALL MODELS COMPROMISED</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #030510;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px, transparent 3px,
+        rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px
+      );
+      pointer-events: none;
+      z-index: 10;
+    }
+    canvas { display: block; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js"></script>
+</head>
+<body>
+<script>
+const DATA = [
+  { label: "Qwen3-VL 8B", zero: 74.1, nonzero: 25.9 },
+  { label: "Claude",       zero: 82.2, nonzero: 17.8 },
+  { label: "GPT-4o",       zero: 67.2, nonzero: 32.8 },
+  { label: "GPT-5",        zero: 83.3, nonzero: 16.7 },
+  { label: "Chandra",      zero: 73.4, nonzero: 26.6 },
+  { label: "Gemini 3.0",   zero: 81.8, nonzero: 18.2 },
+];
+
+const BG      = [3,   5,  16];
+const CYAN    = [0,   255, 230];
+const MAG     = [255,  40, 160];
+const YELLOW  = [255, 230,   0];
+const DCYAN   = [0,   100,  90];
+const DMAG    = [110,  18,  70];
+const GRIDCOL = [18,  35,  55];
+const PANEL   = [8,   13,  30];
+
+const W = 860, H = 560;
+const PAD = { top: 112, right: 50, bottom: 118, left: 78 };
+
+let glitchTimer = 60, glitchActive = false, glitchOff = 0, frame = 0;
+
+new p5(function(p) {
+
+  function neon(x, y, w, h, r, col, ga) {
+    p.noStroke();
+    for (let s = 14; s > 0; s -= 3) {
+      p.fill(col[0], col[1], col[2], ga * (s / 14));
+      p.rect(x - s/2, y - s/2, w + s, h + s, r + s/2);
+    }
+    p.fill(...col); p.rect(x, y, w, h, r);
+  }
+
+  function gText(str, x, y, col, sz, alpha) {
+    p.textSize(sz);
+    const gx = glitchActive ? glitchOff : 0;
+    for (let s = 10; s > 0; s -= 2) {
+      p.fill(col[0], col[1], col[2], alpha * (s/10) * 0.45);
+      p.text(str, x + gx * s/10, y);
+    }
+    p.fill(col[0], col[1], col[2], alpha);
+    p.text(str, x + gx, y);
+  }
+
+  p.setup = function() {
+    p.createCanvas(W, H);
+    p.textFont('Share Tech Mono, monospace');
+  };
+
+  p.draw = function() {
+    frame++;
+    glitchTimer--;
+    if (glitchTimer <= 0) {
+      glitchActive = Math.random() < 0.28;
+      glitchOff = (Math.random() - 0.5) * 7;
+      glitchTimer = Math.floor(Math.random() * 130) + 40;
+    }
+
+    p.background(...BG);
+
+    const cW = W - PAD.left - PAD.right;
+    const cH = H - PAD.top  - PAD.bottom;
+    const n  = DATA.length;
+    const slot = cW / n;
+    const bW = slot * 0.58;
+
+    // panel
+    p.noStroke(); p.fill(...PANEL);
+    p.rect(PAD.left - 10, PAD.top - 10, cW + 20, cH + 20, 4);
+
+    // corner brackets
+    p.stroke(...CYAN); p.strokeWeight(1.5); p.noFill();
+    const bl = 20;
+    [[PAD.left-10, PAD.top-10,1,1],[PAD.left+cW+10,PAD.top-10,-1,1],
+     [PAD.left-10, PAD.top+cH+10,1,-1],[PAD.left+cW+10,PAD.top+cH+10,-1,-1]]
+    .forEach(([cx,cy,sx,sy]) => {
+      p.line(cx,cy,cx+sx*bl,cy); p.line(cx,cy,cx,cy+sy*bl);
+    });
+
+    // grid
+    for (let pct = 0; pct <= 100; pct += 20) {
+      const gy = PAD.top + cH * (1 - pct/100);
+      p.stroke(...GRIDCOL); p.strokeWeight(pct===0?1.5:0.7);
+      p.line(PAD.left, gy, PAD.left+cW, gy);
+      p.noStroke(); p.textAlign(p.RIGHT, p.CENTER);
+      gText(pct+'%', PAD.left-10, gy, CYAN, 10, 190);
+    }
+
+    // axes
+    p.stroke(...CYAN); p.strokeWeight(1.5);
+    p.line(PAD.left, PAD.top, PAD.left, PAD.top+cH+1);
+    p.line(PAD.left, PAD.top+cH, PAD.left+cW, PAD.top+cH);
+
+    // title
+    p.textStyle(p.BOLD); p.textAlign(p.CENTER, p.TOP);
+    gText('SEMANTIC ERROR REPORT', W/2, 13, CYAN, 22, 255);
+    p.textStyle(p.NORMAL);
+    gText('ALL MODELS COMPROMISED  //  THREAT LEVEL: NON-ZERO', W/2, 43, MAG, 11, 210);
+
+    // y-axis label
+    p.push(); p.translate(15, PAD.top+cH/2); p.rotate(-p.HALF_PI);
+    p.textAlign(p.CENTER, p.CENTER);
+    gText('% OF DOCUMENTS', 0, 0, DCYAN, 10, 190);
+    p.pop();
+
+    // bars
+    for (let i = 0; i < n; i++) {
+      const d  = DATA[i];
+      const cx = PAD.left + slot*i + slot/2;
+      const bx = cx - bW/2;
+      const sh = Math.sin(frame*0.04 + i*1.1) * 10;
+
+      const hZ  = cH * (d.zero/100);
+      const hNZ = cH * (d.nonzero/100);
+      const yZ  = PAD.top + cH - hZ;
+      const yNZ = yZ - hNZ;
+
+      // zero-error segment
+      neon(bx, yZ, bW, hZ, 2,
+        [Math.min(255,DCYAN[0]+sh*0.3), Math.min(255,DCYAN[1]+sh), Math.min(255,DCYAN[2]+sh*0.5)],
+        28);
+
+      // error segment
+      neon(bx, yNZ, bW, hNZ, 2, MAG, 50);
+
+      // pulsing top edge
+      const pa = 160 + Math.sin(frame*0.07+i)*80;
+      p.stroke(255,40,160,pa); p.strokeWeight(1.5);
+      p.line(bx+2, yNZ, bx+bW-2, yNZ); p.noStroke();
+
+      // % label
+      if (d.nonzero > 2) {
+        p.textAlign(p.CENTER, p.CENTER); p.textStyle(p.BOLD);
+        gText(d.nonzero.toFixed(1)+'%', cx, yNZ+hNZ/2, YELLOW, 11, 255);
+        p.textStyle(p.NORMAL);
+      }
+
+      // model label
+      p.textAlign(p.CENTER, p.TOP);
+      gText(d.label, cx + (glitchActive && i===3 ? glitchOff : 0),
+            PAD.top+cH+13, CYAN, 11, 220);
+
+      // sub-readout
+      p.textSize(9); p.fill(MAG[0],MAG[1],MAG[2],150); p.noStroke();
+      p.text('ERR:'+d.nonzero.toFixed(1)+'%', cx, PAD.top+cH+29);
+    }
+
+    // legend — centered below bars, well below x labels
+    const lY  = H - 22;
+    const sw  = 12;
+    const sep = 210;
+    const lX1 = W/2 - sep/2;
+    const lX2 = W/2 + sep/2 - sw;
+
+    p.noStroke();
+    // swatch 1
+    for (let s=6;s>0;s-=2){p.fill(DCYAN[0],DCYAN[1],DCYAN[2],35*(s/6));p.rect(lX1-s/2,lY-sw/2-s/2,sw+s,sw+s,2);}
+    p.fill(...DCYAN); p.rect(lX1,lY-sw/2,sw,sw,2);
+    p.textAlign(p.LEFT,p.CENTER);
+    gText('NO ERRORS', lX1+sw+6, lY, CYAN, 11, 200);
+
+    // swatch 2
+    for (let s=6;s>0;s-=2){p.fill(MAG[0],MAG[1],MAG[2],35*(s/6));p.rect(lX2-s/2,lY-sw/2-s/2,sw+s,sw+s,2);}
+    p.fill(...MAG); p.rect(lX2,lY-sw/2,sw,sw,2);
+    gText('\u22651 ERROR', lX2+sw+6, lY, MAG, 11, 200);
+
+    // status line
+    p.textAlign(p.RIGHT,p.TOP); p.textSize(9);
+    p.fill(CYAN[0],CYAN[1],CYAN[2],110);
+    p.text('SYS:ONLINE // MISNOMER v2.1 // '+(glitchActive?'!GLITCH!':'NOMINAL'), W-12, 10);
+
+    // scan sweep
+    const scanY = (frame*2) % H;
+    p.noStroke(); p.fill(0,255,230,8);
+    p.rect(0, scanY, W, 3);
+  };
+});
+</script>
+</body>
+</html>
