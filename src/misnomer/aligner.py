@@ -120,7 +120,7 @@ def align_words(
 
     for i in range(1, m + 1):
         for j in range(1, n + 1):
-            cost = 0 if pred[i - 1] == gt[j - 1] else 1
+            cost = 0 if pred[i - 1].lower() == gt[j - 1].lower() else 1
             dp[i][j] = min(
                 dp[i - 1][j] + 1,
                 dp[i][j - 1] + 1,
@@ -131,7 +131,7 @@ def align_words(
     i, j = m, n
     while i > 0 or j > 0:
         if i > 0 and j > 0:
-            cost = 0 if pred[i - 1] == gt[j - 1] else 1
+            cost = 0 if pred[i - 1].lower() == gt[j - 1].lower() else 1
             if dp[i][j] == dp[i - 1][j - 1] + cost:
                 aligned.append(
                     AlignmentItem(

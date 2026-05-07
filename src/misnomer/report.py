@@ -32,4 +32,6 @@ class SemanticErrorReport(BaseModel):
     semantic_error_count: int = Field(ge=0)
     obvious_error_count: int = Field(ge=0)
     wer: float = Field(ge=0.0)
+    is_refusal: bool = False
+    preprocessing_applied: list[str] = Field(default_factory=list)
     metadata: dict[str, object] = Field(default_factory=dict)

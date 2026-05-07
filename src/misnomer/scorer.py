@@ -6,6 +6,7 @@ from misnomer.composite import composite_score, normalize_perplexities
 from misnomer.config import ScorerConfig
 from misnomer.models.embedder import Embedder
 from misnomer.models.lm import LMScorer
+from misnomer.preprocess import preprocess
 from misnomer.report import SemanticErrorReport, ScorerMode, WordScore
 
 
@@ -21,9 +22,32 @@ def score(
     metadata: dict[str, object] | None = None,
     config: ScorerConfig | None = None,
 ) -> SemanticErrorReport:
-    predicted = predicted or ""
     ground_truth = ground_truth or ""
     cfg = config or ScorerConfig(scorer_version=scorer_version)
+
+    pre = preprocess(predicted)
+    predicted = pre.text
+
+    if pre.is_refusal:
+        lm = LMScorer(cfg)
+        embedder = Embedder(cfg)
+        return SemanticErrorReport(
+            predicted_text=predicted,
+            ground_truth_text=ground_truth,
+            scorer_version=cfg.scorer_version,
+            lm_model=lm.resolved_model_name,
+            embedder_model=embedder.resolved_model_name,
+            scorer_mode="text_only",
+            word_scores=[],
+            document_score=1.0,
+            semantic_error_count=0,
+            obvious_error_count=0,
+            wer=1.0,
+            is_refusal=True,
+            preprocessing_applied=pre.transformations,
+            metadata=metadata or {},
+        )
+
     lm = LMScorer(cfg)
     alignment = align_words(predicted, ground_truth, tokenizer=lm.tokenizer)
 
@@ -164,6 +188,8 @@ def score(
         semantic_error_count=semantic_error_count,
         obvious_error_count=obvious_error_count,
         wer=wer,
+        is_refusal=False,
+        preprocessing_applied=pre.transformations,
         metadata=metadata or {},
     )
 
