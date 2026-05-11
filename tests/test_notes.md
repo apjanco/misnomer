@@ -60,3 +60,26 @@ Peresses have been created. Most Calour
 Good example of semantic error (gather/garner)
 Though they may gather some Left-wing	
 Though they may garner some left-wing
+
+
+chatgpt-gpt4o_results	5	
+he was a real nowhere man sitting in his B. I. P.	
+he was a keen member of the B.S.P. .
+
+chatgpt-gpt4o_results	5	
+because we are using rote words.	
+became mere marauding route marches .
+
+chandra_results	4	
+labeled M. P. s and hangued men	
+lobbied M.P.s and harangued them
+
+Could plausibly be read either way 
+claude-vision_results	3	
+peebles at the cleavage.	
+public of the change .
+
+Ground truth and image actually differ (image shows dept), annotator corrected or inferred from context
+claude-vision_results	3	
+payment of a 210 million dept to Ameriton.	
+payment of a 210million debt to America .
