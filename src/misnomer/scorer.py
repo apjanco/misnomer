@@ -9,7 +9,7 @@ from misnomer.config import ScorerConfig
 from misnomer.models.embedder import Embedder
 from misnomer.models.lm import LMScorer
 from misnomer.preprocess import preprocess
-from misnomer.report import SemanticErrorReport, ScorerMode, WordScore
+from misnomer.report import SemanticErrorReport, ScorerMode, WordScore, DocumentErrorType
 
 
 def _frequency_weight(word: str, counts: dict[str, int]) -> float:
@@ -47,6 +47,10 @@ def score(
             obvious_error_count=0,
             wer=1.0,
             cer=refusal_cer,
+            insertion_ratio=0.0,
+            substitution_rate=1.0,
+            document_embedding_similarity=None,
+            document_error_type="refusal",
             is_refusal=True,
             preprocessing_applied=pre.transformations,
             metadata=metadata or {},
@@ -183,6 +187,23 @@ def score(
     gt_chars = len(ground_truth)
     cer = Levenshtein.distance(predicted, ground_truth) / max(1, gt_chars)
 
+    pred_words = tokenize_words(predicted, tokenizer=lm.tokenizer)
+    insertion_ratio = insertions / max(1, len(pred_words))
+    substitution_rate = substitutions / max(1, len(gt_words))
+
+    doc_sim = embedder.document_similarity(predicted, ground_truth)
+
+    def _document_error_type() -> DocumentErrorType:
+        if (
+            doc_sim is not None
+            and doc_sim < cfg.hallucination_similarity_threshold
+            and substitution_rate >= cfg.hallucination_substitution_rate_threshold
+        ):
+            return "hallucinated"
+        if semantic_error_count > 0 or obvious_error_count > 0:
+            return "partial"
+        return "correct"
+
     return SemanticErrorReport(
         predicted_text=predicted,
         ground_truth_text=ground_truth,
@@ -196,6 +217,10 @@ def score(
         obvious_error_count=obvious_error_count,
         wer=wer,
         cer=cer,
+        insertion_ratio=insertion_ratio,
+        substitution_rate=substitution_rate,
+        document_embedding_similarity=doc_sim,
+        document_error_type=_document_error_type(),
         is_refusal=False,
         preprocessing_applied=pre.transformations,
         metadata=metadata or {},

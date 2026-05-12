@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 AlignmentType = Literal["MATCH", "SUBSTITUTION", "INSERTION", "DELETION"]
 ErrorType = Literal["SEMANTIC", "OBVIOUS"]
 ScorerMode = Literal["full", "standard", "text_only"]
+DocumentErrorType = Literal["correct", "partial", "hallucinated", "refusal"]
 
 
 class WordScore(BaseModel):
@@ -33,6 +34,10 @@ class SemanticErrorReport(BaseModel):
     obvious_error_count: int = Field(ge=0)
     wer: float = Field(ge=0.0)
     cer: float = Field(ge=0.0)
+    insertion_ratio: float = Field(default=0.0, ge=0.0)
+    substitution_rate: float = Field(default=0.0, ge=0.0)
+    document_embedding_similarity: float | None = Field(default=None, ge=0.0, le=1.0)
+    document_error_type: DocumentErrorType = "correct"
     is_refusal: bool = False
     preprocessing_applied: list[str] = Field(default_factory=list)
     metadata: dict[str, object] = Field(default_factory=dict)

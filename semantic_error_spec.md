@@ -151,13 +151,25 @@ class SemanticErrorReport:
 
     word\_scores: list\[WordScore\]
 
-    document\_score: float          \# document-level aggregate
+    document\_score: float          \# document-level aggregate of substitution scores
 
     semantic\_error\_count: int
 
     obvious\_error\_count: int
 
     wer: float                     \# standard WER for comparison
+
+    cer: float                     \# character error rate for comparison
+
+    insertion\_ratio: float         \# insertions / max(1, predicted word count)
+
+    substitution\_rate: float       \# substitutions / max(1, ground truth word count)
+
+    document\_embedding\_similarity: float | None  \# cosine similarity of full GT vs predicted; None in text\_only mode
+
+    document\_error\_type: str       \# "correct" | "partial" | "hallucinated" | "refusal"
+
+    is\_refusal: bool               \# True when predicted is empty or boilerplate only
 
     metadata: dict                 \# optional, user-supplied
 
@@ -279,7 +291,31 @@ Note: a high composite score indicates a concerning substitution. A semantically
 
 Weighted average of word-level composite scores across all substituted pairs, weighted by word frequency rank (rare words weighted higher, as errors on rare words are harder to catch).
 
----
+### 6.6 Document-Level Embedding Similarity
+
+A second document-level signal is computed by encoding the full ground truth and predicted strings with the internal sentence-transformer (without the word-frame wrapper used for word-level scoring) and taking their cosine similarity. This captures overall semantic drift at the document level rather than aggregating word-level substitutions — useful for detecting cases where the predicted text is topically coherent but describes something entirely different from the source.
+
+This field is `None` in `text_only` mode (no transformer available).
+
+### 6.7 Derived Rate Fields
+
+- **`insertion_ratio`** — insertions divided by predicted word count. A high value indicates the model added words not present in the source, which is the hallmark of hallucinated continuation.
+- **`substitution_rate`** — substitutions divided by ground truth word count. Combined with low `document_embedding_similarity`, a high substitution rate signals whole-document hallucination rather than isolated substitution errors.
+
+### 6.8 Document Error Type Classification
+
+A derived categorical label summarising the document's failure mode:
+
+| Value | Condition |
+| :---- | :---- |
+| `correct` | No semantic or obvious errors detected |
+| `partial` | At least one semantic or obvious substitution error |
+| `hallucinated` | `document_embedding_similarity < 0.25` AND `substitution_rate ≥ 0.5` |
+| `refusal` | `is_refusal=True` (empty or boilerplate-only output) |
+
+The `hallucinated` class captures documents where the predicted text is both semantically distant from the ground truth at document level *and* predominantly composed of wrong words — a pattern consistent with the VLM confabulating content rather than transcribing the source.
+
+Thresholds are configurable via `ScorerConfig.hallucination_similarity_threshold` (default `0.25`) and `ScorerConfig.hallucination_substitution_rate_threshold` (default `0.5`).
 
 ## 7\. Tiered Logprob Support
 

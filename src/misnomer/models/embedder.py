@@ -32,6 +32,23 @@ class Embedder:
     def resolved_model_name(self) -> str:
         return self.model_name if self._model is not None else "rapidfuzz-char-similarity"
 
+    def document_similarity(self, text_a: str, text_b: str) -> float | None:
+        """Cosine similarity between two full-length texts.
+
+        Unlike :meth:`similarity`, texts are encoded as-is (no word-frame
+        wrapping) so the sentence-transformer uses full document context.
+        Returns ``None`` when the model is not available.
+        """
+        if self._model is None:
+            return None
+        if not text_a and not text_b:
+            return 1.0
+        if not text_a or not text_b:
+            return 0.0
+        embeddings = self._model.encode([text_a, text_b], normalize_embeddings=True)
+        score = float((embeddings[0] * embeddings[1]).sum())
+        return max(0.0, min(1.0, score))
+
     def similarity(self, left: str, right: str) -> float:
         if not left and not right:
             return 1.0

@@ -11,6 +11,9 @@ class ScorerConfig(BaseModel):
     semantic_threshold: float = Field(default=0.35, ge=0.0, le=1.0)
     perplexity_weight: float = Field(default=0.4, ge=0.0, le=1.0)
     semantic_weight: float = Field(default=0.6, ge=0.0, le=1.0)
+    # Thresholds for document-level error type classification
+    hallucination_similarity_threshold: float = Field(default=0.25, ge=0.0, le=1.0)
+    hallucination_substitution_rate_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
     local_files_only: bool = True
     allow_download: bool = False
     model_revision: str | None = None
