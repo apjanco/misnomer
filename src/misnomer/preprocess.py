@@ -70,8 +70,8 @@ def preprocess(text: str | None) -> PreprocessResult:
     Returns a :class:`PreprocessResult` with the cleaned text and a record
     of which transformations were applied.
     """
-    if not text:
-        return PreprocessResult(text=text or "")
+    if not text or not text.strip():
+        return PreprocessResult(text="", is_refusal=True, transformations=["empty_response"])
 
     if is_refusal(text):
         return PreprocessResult(text=text, is_refusal=True, transformations=["refusal_detected"])

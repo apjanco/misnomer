@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from rapidfuzz.distance import Levenshtein
+
 from misnomer.aligner import align_words, char_edit_distance, tokenize_words
 from misnomer.classifier import classify_substitution
 from misnomer.composite import composite_score, normalize_perplexities
@@ -31,6 +33,7 @@ def score(
     if pre.is_refusal:
         lm = LMScorer(cfg)
         embedder = Embedder(cfg)
+        refusal_cer = Levenshtein.distance(predicted, ground_truth) / max(1, len(ground_truth))
         return SemanticErrorReport(
             predicted_text=predicted,
             ground_truth_text=ground_truth,
@@ -43,6 +46,7 @@ def score(
             semantic_error_count=0,
             obvious_error_count=0,
             wer=1.0,
+            cer=refusal_cer,
             is_refusal=True,
             preprocessing_applied=pre.transformations,
             metadata=metadata or {},
@@ -176,6 +180,9 @@ def score(
     document_score = (weighted_sum / weight_total) if weight_total > 0 else 0.0
     wer = (substitutions + insertions + deletions) / max(1, len(gt_words))
 
+    gt_chars = len(ground_truth)
+    cer = Levenshtein.distance(predicted, ground_truth) / max(1, gt_chars)
+
     return SemanticErrorReport(
         predicted_text=predicted,
         ground_truth_text=ground_truth,
@@ -188,6 +195,7 @@ def score(
         semantic_error_count=semantic_error_count,
         obvious_error_count=obvious_error_count,
         wer=wer,
+        cer=cer,
         is_refusal=False,
         preprocessing_applied=pre.transformations,
         metadata=metadata or {},
