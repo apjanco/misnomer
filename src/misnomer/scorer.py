@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from rapidfuzz.distance import Levenshtein
 
 from misnomer.aligner import align_words, char_edit_distance, tokenize_words
@@ -17,22 +19,22 @@ def _frequency_weight(word: str, counts: dict[str, int]) -> float:
     return 1.0 / float(freq)
 
 
-def score(
+def _score_with_models(
     predicted: str | None,
     ground_truth: str | None,
-    scorer_version: str = "1.0",
+    lm: LMScorer,
+    embedder: Embedder,
+    cfg: ScorerConfig,
     metadata: dict[str, object] | None = None,
-    config: ScorerConfig | None = None,
 ) -> SemanticErrorReport:
+    """Core scoring logic. Accepts pre-built model instances so callers can
+    amortize the model-loading cost across many document pairs."""
     ground_truth = ground_truth or ""
-    cfg = config or ScorerConfig(scorer_version=scorer_version)
 
     pre = preprocess(predicted)
     predicted = pre.text
 
     if pre.is_refusal:
-        lm = LMScorer(cfg)
-        embedder = Embedder(cfg)
         refusal_cer = Levenshtein.distance(predicted, ground_truth) / max(1, len(ground_truth))
         return SemanticErrorReport(
             predicted_text=predicted,
@@ -56,15 +58,12 @@ def score(
             metadata=metadata or {},
         )
 
-    lm = LMScorer(cfg)
     alignment = align_words(predicted, ground_truth, tokenizer=lm.tokenizer)
 
     gt_words = tokenize_words(ground_truth, tokenizer=lm.tokenizer)
     gt_counts: dict[str, int] = {}
     for w in gt_words:
         gt_counts[w] = gt_counts.get(w, 0) + 1
-
-    embedder = Embedder(cfg)
 
     # Determine operational tier based on available backends.
     if lm.is_transformer_backed and embedder.is_model_backed:
@@ -200,7 +199,7 @@ def score(
             and substitution_rate >= cfg.hallucination_substitution_rate_threshold
         ):
             return "hallucinated"
-        if semantic_error_count > 0 or obvious_error_count > 0:
+        if semantic_error_count > 0 or obvious_error_count > 0 or wer > 0:
             return "partial"
         return "correct"
 
@@ -227,25 +226,96 @@ def score(
     )
 
 
+def score(
+    predicted: str | None,
+    ground_truth: str | None,
+    scorer_version: str = "1.0",
+    metadata: dict[str, object] | None = None,
+    config: ScorerConfig | None = None,
+) -> SemanticErrorReport:
+    cfg = config or ScorerConfig(scorer_version=scorer_version)
+    lm = LMScorer(cfg)
+    embedder = Embedder(cfg)
+    return _score_with_models(predicted, ground_truth, lm, embedder, cfg, metadata)
+
+
 def score_batch(
     pairs: list[tuple[str, str]] | list[tuple[str, str, dict]],
     scorer_version: str = "1.0",
     metadata: dict[str, object] | None = None,
     config: ScorerConfig | None = None,
 ) -> list[SemanticErrorReport]:
+    """Score multiple document pairs, loading models only once."""
     cfg = config or ScorerConfig(scorer_version=scorer_version)
+    lm = LMScorer(cfg)
+    embedder = Embedder(cfg)
     reports = []
     for pair in pairs:
         pred, gt = pair[0], pair[1]
         pair_meta: dict[str, object] = dict(pair[2]) if len(pair) > 2 else (metadata or {})  # type: ignore[misc]
-        reports.append(
-            score(
-                predicted=pred,
-                ground_truth=gt,
-                scorer_version=cfg.scorer_version,
-                metadata=pair_meta,
-                config=cfg,
-            )
-        )
+        reports.append(_score_with_models(pred, gt, lm, embedder, cfg, pair_meta))
     return reports
+
+
+def score_jsonl(
+    input_path: str | Path,
+    output_path: str | Path,
+    predicted_field: str = "predicted",
+    ground_truth_field: str = "ground_truth",
+    scorer_version: str = "1.0",
+    config: ScorerConfig | None = None,
+) -> int:
+    """Score document pairs from a JSONL file and write reports to another JSONL file.
+
+    Streams both input and output so large files don't need to fit in memory.
+    Models are loaded once for the entire file.
+
+    Parameters
+    ----------
+    input_path:
+        Path to a JSONL file. Each line must be a JSON object with at least
+        ``predicted_field`` and ``ground_truth_field`` keys. All other fields
+        are passed through into the report's ``metadata``.
+    output_path:
+        Path where scored reports are written as JSONL (one JSON object per line).
+    predicted_field:
+        Key in each input record that contains the predicted text.
+    ground_truth_field:
+        Key in each input record that contains the ground truth text.
+    scorer_version:
+        Scorer version string, pinned for reproducibility.
+    config:
+        Optional :class:`ScorerConfig` override.
+
+    Returns
+    -------
+    int
+        Number of records scored.
+    """
+    cfg = config or ScorerConfig(scorer_version=scorer_version)
+    lm = LMScorer(cfg)
+    embedder = Embedder(cfg)
+
+    input_path = Path(input_path)
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    count = 0
+    with (
+        input_path.open(encoding="utf-8") as in_fh,
+        output_path.open("w", encoding="utf-8") as out_fh,
+    ):
+        for line in in_fh:
+            line = line.strip()
+            if not line:
+                continue
+            record = json.loads(line)
+            predicted = record.get(predicted_field) or ""
+            ground_truth = record.get(ground_truth_field) or ""
+            meta = {k: v for k, v in record.items() if k not in {predicted_field, ground_truth_field}}
+            report = _score_with_models(predicted, ground_truth, lm, embedder, cfg, meta)
+            out_fh.write(report.model_dump_json() + "\n")
+            count += 1
+
+    return count
 

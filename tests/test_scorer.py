@@ -1,4 +1,4 @@
-from misnomer.scorer import score, score_batch
+from misnomer.scorer import score, score_batch, score_jsonl
 from misnomer.config import ScorerConfig
 
 
@@ -122,4 +122,119 @@ def test_spec_examples_full_mode() -> None:
         f"horse→steed composite ({sub_steed.composite_score:.3f}) must exceed "
         f"horse→house composite ({sub_house.composite_score:.3f})"
     )
+
+
+# ---------------------------------------------------------------------------
+# New-field tests (Priority 4)
+# ---------------------------------------------------------------------------
+
+def test_is_refusal_on_empty_input() -> None:
+    """Empty and whitespace-only predictions must be flagged as refusals."""
+    for pred in ["", "   ", None]:
+        report = score(pred, "The house stood in the field")
+        assert report.is_refusal is True, f"Expected is_refusal for {pred!r}"
+        assert report.document_error_type == "refusal"
+        assert report.semantic_error_count == 0
+        assert report.word_scores == []
+
+
+def test_cer_is_zero_on_exact_match() -> None:
+    report = score("exact match text", "exact match text")
+    assert report.cer == 0.0
+
+
+def test_cer_positive_on_char_error() -> None:
+    """A single-character substitution must produce CER > 0."""
+    report = score("hose", "horse")
+    assert report.cer > 0.0
+
+
+def test_insertion_ratio_on_extra_words() -> None:
+    """Prediction with extra words not in GT must produce insertion_ratio > 0."""
+    report = score("The horse stood there quietly", "The horse stood")
+    assert report.insertion_ratio > 0.0
+
+
+def test_substitution_rate_on_substitution() -> None:
+    report = score("The horse stood", "The house stood")
+    assert report.substitution_rate > 0.0
+
+
+def test_document_error_type_correct_on_exact_match() -> None:
+    report = score("a b c", "a b c")
+    assert report.document_error_type == "correct"
+
+
+def test_document_error_type_partial_on_deletion() -> None:
+    """A deletion (WER > 0, no substitutions) must yield 'partial', not 'correct'."""
+    report = score("The stood", "The horse stood")
+    assert report.wer > 0
+    assert report.document_error_type == "partial"
+
+
+def test_document_error_type_partial_on_insertion() -> None:
+    """An insertion (WER > 0, no substitutions) must yield 'partial', not 'correct'."""
+    report = score("The horse quickly stood", "The horse stood")
+    assert report.wer > 0
+    assert report.document_error_type == "partial"
+
+
+def test_public_api_imports() -> None:
+    """Top-level misnomer package must export all public symbols."""
+    import misnomer
+    for name in ["score", "score_batch", "score_jsonl", "highlight",
+                 "ScorerConfig", "SemanticErrorReport", "WordScore", "DocumentErrorType"]:
+        assert hasattr(misnomer, name), f"misnomer.{name} not found in public API"
+
+
+def test_score_jsonl_roundtrip(tmp_path) -> None:
+    """score_jsonl must score every record and write valid JSON reports."""
+    import json
+    pairs = [
+        {"predicted": "The horse stood", "ground_truth": "The house stood"},
+        {"predicted": "a b c", "ground_truth": "a b c"},
+        {"predicted": "", "ground_truth": "something"},
+    ]
+    input_file = tmp_path / "input.jsonl"
+    output_file = tmp_path / "output.jsonl"
+    input_file.write_text("\n".join(json.dumps(p) for p in pairs), encoding="utf-8")
+
+    count = score_jsonl(input_file, output_file)
+    assert count == 3
+
+    results = [json.loads(line) for line in output_file.read_text(encoding="utf-8").splitlines()]
+    assert len(results) == 3
+    assert results[2]["is_refusal"] is True
+    assert results[1]["wer"] == 0.0
+    assert results[0]["wer"] > 0.0
+
+
+def test_score_jsonl_passthrough_metadata(tmp_path) -> None:
+    """Fields other than predicted/ground_truth must appear in report metadata."""
+    import json
+    record = {"predicted": "x", "ground_truth": "y", "page": 42, "model": "test"}
+    input_file = tmp_path / "input.jsonl"
+    output_file = tmp_path / "output.jsonl"
+    input_file.write_text(json.dumps(record), encoding="utf-8")
+
+    score_jsonl(input_file, output_file)
+    result = json.loads(output_file.read_text(encoding="utf-8"))
+    assert result["metadata"]["page"] == 42
+    assert result["metadata"]["model"] == "test"
+
+
+def test_score_batch_loads_models_once() -> None:
+    """score_batch must produce the same results as calling score() individually."""
+    pairs = [
+        ("The horse stood", "The house stood"),
+        ("a b c", "a b c"),
+        ("", "something"),
+    ]
+    batch_reports = score_batch(pairs)
+    individual_reports = [score(p, g) for p, g in pairs]
+
+    for b, i in zip(batch_reports, individual_reports):
+        assert b.wer == i.wer
+        assert b.is_refusal == i.is_refusal
+        assert b.document_error_type == i.document_error_type
 
