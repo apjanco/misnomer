@@ -1,3 +1,9 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="logo-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="logo-light.png">
+  <img width="100" src="logo-light.png" alt="Misnomer Logo">
+</picture>
+
 # misnomer
 
 **Semantic error measurement for OCR/HTR output.**
