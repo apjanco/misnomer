@@ -11,6 +11,14 @@ modified by the rescoring pipeline; all derived outputs go to
 `ground_truth` is byte-identical across all seven files at every index
 (verified — no misjoins).
 
+**Ground-truth provenance**: HuggingFace dataset `Teklia/IAM-line`,
+splits train + validation + test concatenated in that order
+(6,482 + 976 + 2,915 = 10,373 — exact match). The row index here is the
+row index of that concatenation, so line images for human validation can
+be re-joined from the dataset by index. IAM ground truth uses spaced
+punctuation ("Carlyle , and ,"); the aligner strips boundary punctuation,
+so this convention never reaches the classifier.
+
 Schema quirks from incremental development, all handled by
 `rescore_iam.py`:
 
