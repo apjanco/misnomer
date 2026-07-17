@@ -200,7 +200,7 @@ class LMScorer:
         log-probability is the SUM over all of its tokens, teacher-forced on
         the same prefix — full-word scoring, never first-token-only:
         orthographic neighbors frequently share their opening subword
-        (``vine|gar`` / ``vine|yard``), which would collapse a first-token
+        (``in|sure`` / ``in|jure``), which would collapse a first-token
         Δ to zero. Positive Δ: the model's prior prefers what was written
         over what the page attests (lectio facilior as a sign test).
 

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 from rapidfuzz.distance import Levenshtein
 
 from misnomer.aligner import align_words, char_edit_distance, tokenize_words
-from misnomer.classifier import classify_substitution
+from misnomer.classifier import SpellDictionary, classify_substitution, classify_substitution_v2
 from misnomer.composite import composite_score, normalize_perplexities
 from misnomer.config import ScorerConfig
 from misnomer.models.embedder import Embedder
@@ -18,7 +19,12 @@ class StrictModeError(RuntimeError):
     """Raised when strict=True but the full scorer stack is unavailable."""
 
 
-def _enforce_strict(cfg: ScorerConfig, lm: LMScorer, embedder: Embedder) -> None:
+def _enforce_strict(
+    cfg: ScorerConfig,
+    lm: LMScorer,
+    embedder: Embedder,
+    dictionary: SpellDictionary | None = None,
+) -> None:
     if not cfg.strict:
         return
     missing: list[str] = []
@@ -27,6 +33,10 @@ def _enforce_strict(cfg: ScorerConfig, lm: LMScorer, embedder: Embedder) -> None
     if not embedder.is_model_backed:
         missing.append(
             f"embedder {cfg.resolved_embedder_model()!r} (char-similarity fallback active)"
+        )
+    if cfg.gates_active and (dictionary is None or not dictionary.available):
+        missing.append(
+            f"dictionary {cfg.dictionary_lang!r} (GARBLE gate off; install misnomer[gates])"
         )
     if missing:
         raise StrictModeError(
@@ -41,6 +51,10 @@ def _frequency_weight(word: str, counts: dict[str, int]) -> float:
     return 1.0 / float(freq)
 
 
+def _build_dictionary(cfg: ScorerConfig) -> SpellDictionary | None:
+    return SpellDictionary(cfg.dictionary_lang) if cfg.gates_active else None
+
+
 def _score_with_models(
     predicted: str | None,
     ground_truth: str | None,
@@ -48,10 +62,11 @@ def _score_with_models(
     embedder: Embedder,
     cfg: ScorerConfig,
     metadata: dict[str, object] | None = None,
+    dictionary: SpellDictionary | None = None,
 ) -> SemanticErrorReport:
     """Core scoring logic. Accepts pre-built model instances so callers can
     amortize the model-loading cost across many document pairs."""
-    _enforce_strict(cfg, lm, embedder)
+    _enforce_strict(cfg, lm, embedder, dictionary)
     ground_truth = ground_truth or ""
 
     pre = preprocess(predicted)
@@ -99,6 +114,7 @@ def _score_with_models(
 
     gt_perplexities = lm.word_perplexities(gt_words)
     substitution_gt_indices: list[int] = []
+    substitution_words: dict[int, str] = {}
 
     gt_idx = -1
     for item in alignment:
@@ -106,13 +122,18 @@ def _score_with_models(
             gt_idx += 1
         if item.alignment_type == "SUBSTITUTION":
             substitution_gt_indices.append(gt_idx)
+            substitution_words[gt_idx] = item.predicted_word
 
     substitution_raw_perplexities = [gt_perplexities[i] for i in substitution_gt_indices]
     substitution_norm_perplexities = normalize_perplexities(substitution_raw_perplexities)
 
+    # v1.1: Δ per substituted position, one batched call per document.
+    deltas: dict[int, float | None] = {}
+    if cfg.gates_active and substitution_words:
+        deltas = lm.substitution_deltas(gt_words, substitution_words)
+
     word_scores: list[WordScore] = []
-    semantic_error_count = 0
-    obvious_error_count = 0
+    class_counts: Counter[str] = Counter()
     substitutions = 0
     insertions = 0
     deletions = 0
@@ -138,15 +159,29 @@ def _score_with_models(
 
         if item.alignment_type == "SUBSTITUTION":
             substitutions += 1
+            position = substitution_gt_indices[subst_cursor]
             perplexity = substitution_raw_perplexities[subst_cursor]
             normalized_perplexity = substitution_norm_perplexities[subst_cursor]
             subst_cursor += 1
 
             if embedder.is_model_backed:
-                similarity: float | None = embedder.similarity(item.predicted_word, item.ground_truth_word)
-                error_type = classify_substitution(similarity, cfg.semantic_threshold)
+                similarity: float | None = embedder.similarity(
+                    item.predicted_word, item.ground_truth_word
+                )
             else:
                 similarity = None
+
+            if cfg.gates_active:
+                error_type = classify_substitution_v2(
+                    item.predicted_word,
+                    item.ground_truth_word,
+                    similarity,
+                    cfg,
+                    dictionary,
+                )
+            elif similarity is not None:
+                error_type = classify_substitution(similarity, cfg.semantic_threshold)
+            else:
                 error_type = None
 
             score_value = composite_score(
@@ -156,10 +191,8 @@ def _score_with_models(
                 semantic_weight=cfg.semantic_weight,
             )
 
-            if error_type == "SEMANTIC":
-                semantic_error_count += 1
-            elif error_type == "OBVIOUS":
-                obvious_error_count += 1
+            if error_type is not None:
+                class_counts[error_type] += 1
 
             wt = _frequency_weight(item.ground_truth_word, gt_counts)
             weighted_sum += score_value * wt
@@ -174,6 +207,8 @@ def _score_with_models(
                 embedding_similarity=similarity,
                 composite_score=score_value,
                 char_edit_distance=distance,
+                delta=deltas.get(position) if cfg.gates_active else None,
+                context_words=position if cfg.gates_active else None,
             )
             word_scores.append(ws)
             continue
@@ -216,6 +251,9 @@ def _score_with_models(
 
     doc_sim = embedder.document_similarity(predicted, ground_truth)
 
+    semantic_error_count = class_counts["SEMANTIC"]
+    obvious_error_count = class_counts["OBVIOUS"]
+
     def _document_error_type() -> DocumentErrorType:
         if (
             doc_sim is not None
@@ -238,6 +276,11 @@ def _score_with_models(
         document_score=document_score,
         semantic_error_count=semantic_error_count,
         obvious_error_count=obvious_error_count,
+        numeric_error_count=class_counts["NUMERIC"],
+        normalization_count=class_counts["NORMALIZATION"],
+        archaizing_count=class_counts["ARCHAIZING"],
+        garble_count=class_counts["GARBLE"],
+        homoglyph_count=class_counts["HOMOGLYPH"],
         wer=wer,
         cer=cer,
         insertion_ratio=insertion_ratio,
@@ -261,8 +304,9 @@ def score(
     cfg = config or ScorerConfig(scorer_version=scorer_version)
     lm = LMScorer(cfg)
     embedder = Embedder(cfg)
-    _enforce_strict(cfg, lm, embedder)
-    return _score_with_models(predicted, ground_truth, lm, embedder, cfg, metadata)
+    dictionary = _build_dictionary(cfg)
+    _enforce_strict(cfg, lm, embedder, dictionary)
+    return _score_with_models(predicted, ground_truth, lm, embedder, cfg, metadata, dictionary)
 
 
 def score_batch(
@@ -275,12 +319,13 @@ def score_batch(
     cfg = config or ScorerConfig(scorer_version=scorer_version)
     lm = LMScorer(cfg)
     embedder = Embedder(cfg)
-    _enforce_strict(cfg, lm, embedder)
+    dictionary = _build_dictionary(cfg)
+    _enforce_strict(cfg, lm, embedder, dictionary)
     reports = []
     for pair in pairs:
         pred, gt = pair[0], pair[1]
         pair_meta: dict[str, object] = dict(pair[2]) if len(pair) > 2 else (metadata or {})  # type: ignore[misc]
-        reports.append(_score_with_models(pred, gt, lm, embedder, cfg, pair_meta))
+        reports.append(_score_with_models(pred, gt, lm, embedder, cfg, pair_meta, dictionary))
     return reports
 
 
@@ -322,7 +367,8 @@ def score_jsonl(
     cfg = config or ScorerConfig(scorer_version=scorer_version)
     lm = LMScorer(cfg)
     embedder = Embedder(cfg)
-    _enforce_strict(cfg, lm, embedder)
+    dictionary = _build_dictionary(cfg)
+    _enforce_strict(cfg, lm, embedder, dictionary)
 
     input_path = Path(input_path)
     output_path = Path(output_path)
@@ -341,9 +387,8 @@ def score_jsonl(
             predicted = record.get(predicted_field) or ""
             ground_truth = record.get(ground_truth_field) or ""
             meta = {k: v for k, v in record.items() if k not in {predicted_field, ground_truth_field}}
-            report = _score_with_models(predicted, ground_truth, lm, embedder, cfg, meta)
+            report = _score_with_models(predicted, ground_truth, lm, embedder, cfg, meta, dictionary)
             out_fh.write(report.model_dump_json() + "\n")
             count += 1
 
     return count
-

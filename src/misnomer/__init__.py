@@ -1,7 +1,7 @@
 from .config import ScorerConfig
 from .highlight import highlight
 from .report import DocumentErrorType, SemanticErrorReport, WordScore
-from .scorer import score, score_batch, score_jsonl
+from .scorer import StrictModeError, score, score_batch, score_jsonl
 
 __all__ = [
     "score",
@@ -12,4 +12,5 @@ __all__ = [
     "SemanticErrorReport",
     "WordScore",
     "DocumentErrorType",
+    "StrictModeError",
 ]
