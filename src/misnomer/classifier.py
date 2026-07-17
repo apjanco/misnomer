@@ -42,7 +42,7 @@ DEFAULT_ALLOGRAPH_MAP: dict[str, str] = {
 }
 
 # Positional-usage equivalences: both characters are modern; the archaic
-# *usage* (u-for-v, i-for-j, w-for-u as in "perswaded") is what varies.
+# *usage* (u-for-v as in "vpon", i-for-j, w-for-u as in "wnto") is what varies.
 # Folded for equality testing; direction is decided by dictionary membership.
 # Note: Unicode casefolding already folds ſ->s and ß->ss underneath this
 # layer, so those DEFAULT_ALLOGRAPH_MAP entries serve direction detection.
