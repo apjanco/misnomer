@@ -14,6 +14,28 @@ from misnomer.preprocess import preprocess
 from misnomer.report import SemanticErrorReport, ScorerMode, WordScore, DocumentErrorType
 
 
+class StrictModeError(RuntimeError):
+    """Raised when strict=True but the full scorer stack is unavailable."""
+
+
+def _enforce_strict(cfg: ScorerConfig, lm: LMScorer, embedder: Embedder) -> None:
+    if not cfg.strict:
+        return
+    missing: list[str] = []
+    if not lm.is_transformer_backed:
+        missing.append(f"LM {cfg.lm_model!r} (frequency-proxy fallback active)")
+    if not embedder.is_model_backed:
+        missing.append(
+            f"embedder {cfg.resolved_embedder_model()!r} (char-similarity fallback active)"
+        )
+    if missing:
+        raise StrictModeError(
+            "strict mode requires the full scorer stack; unavailable: "
+            + "; ".join(missing)
+            + ". Install `misnomer[model]`, pre-download the models, or set allow_download=True."
+        )
+
+
 def _frequency_weight(word: str, counts: dict[str, int]) -> float:
     freq = counts.get(word, 1)
     return 1.0 / float(freq)
@@ -29,6 +51,7 @@ def _score_with_models(
 ) -> SemanticErrorReport:
     """Core scoring logic. Accepts pre-built model instances so callers can
     amortize the model-loading cost across many document pairs."""
+    _enforce_strict(cfg, lm, embedder)
     ground_truth = ground_truth or ""
 
     pre = preprocess(predicted)
@@ -54,6 +77,7 @@ def _score_with_models(
             document_embedding_similarity=None,
             document_error_type="refusal",
             is_refusal=True,
+            strict=cfg.strict,
             preprocessing_applied=pre.transformations,
             metadata=metadata or {},
         )
@@ -221,6 +245,7 @@ def _score_with_models(
         document_embedding_similarity=doc_sim,
         document_error_type=_document_error_type(),
         is_refusal=False,
+        strict=cfg.strict,
         preprocessing_applied=pre.transformations,
         metadata=metadata or {},
     )
@@ -236,6 +261,7 @@ def score(
     cfg = config or ScorerConfig(scorer_version=scorer_version)
     lm = LMScorer(cfg)
     embedder = Embedder(cfg)
+    _enforce_strict(cfg, lm, embedder)
     return _score_with_models(predicted, ground_truth, lm, embedder, cfg, metadata)
 
 
@@ -249,6 +275,7 @@ def score_batch(
     cfg = config or ScorerConfig(scorer_version=scorer_version)
     lm = LMScorer(cfg)
     embedder = Embedder(cfg)
+    _enforce_strict(cfg, lm, embedder)
     reports = []
     for pair in pairs:
         pred, gt = pair[0], pair[1]
@@ -295,6 +322,7 @@ def score_jsonl(
     cfg = config or ScorerConfig(scorer_version=scorer_version)
     lm = LMScorer(cfg)
     embedder = Embedder(cfg)
+    _enforce_strict(cfg, lm, embedder)
 
     input_path = Path(input_path)
     output_path = Path(output_path)

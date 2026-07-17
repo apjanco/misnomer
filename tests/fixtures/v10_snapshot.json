@@ -78,6 +78,7 @@
   "document_embedding_similarity": 1.0,
   "document_error_type": "correct",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -99,6 +100,7 @@
   "document_embedding_similarity": null,
   "document_error_type": "refusal",
   "is_refusal": true,
+  "strict": false,
   "preprocessing_applied": [
    "empty_response"
   ],
@@ -183,6 +185,7 @@
   "document_embedding_similarity": 0.0,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -265,6 +268,7 @@
   "document_embedding_similarity": 0.616351,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -347,6 +351,7 @@
   "document_embedding_similarity": 0.650684,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -439,6 +444,7 @@
   "document_embedding_similarity": 0.813856,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -531,6 +537,7 @@
   "document_embedding_similarity": 0.880936,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -613,6 +620,7 @@
   "document_embedding_similarity": 0.98865,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -695,6 +703,7 @@
   "document_embedding_similarity": 0.543146,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -777,6 +786,7 @@
   "document_embedding_similarity": 0.825017,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -859,6 +869,7 @@
   "document_embedding_similarity": 0.396595,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -951,6 +962,7 @@
   "document_embedding_similarity": 0.726505,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -1023,6 +1035,7 @@
   "document_embedding_similarity": 0.791059,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -1105,6 +1118,7 @@
   "document_embedding_similarity": 1.0,
   "document_error_type": "correct",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -1187,6 +1201,7 @@
   "document_embedding_similarity": 1.0,
   "document_error_type": "correct",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -1208,6 +1223,7 @@
   "document_embedding_similarity": null,
   "document_error_type": "refusal",
   "is_refusal": true,
+  "strict": false,
   "preprocessing_applied": [
    "refusal_detected"
   ],
@@ -1292,6 +1308,7 @@
   "document_embedding_similarity": 1.0,
   "document_error_type": "correct",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [
    "strip_markdown_fence"
   ],
@@ -1376,6 +1393,7 @@
   "document_embedding_similarity": 1.0,
   "document_error_type": "correct",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [
    "strip_preamble"
   ],
@@ -1470,6 +1488,7 @@
   "document_embedding_similarity": 0.848409,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  },
@@ -1702,6 +1721,7 @@
   "document_embedding_similarity": 0.958589,
   "document_error_type": "partial",
   "is_refusal": false,
+  "strict": false,
   "preprocessing_applied": [],
   "metadata": {}
  }

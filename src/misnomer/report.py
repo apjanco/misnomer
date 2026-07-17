@@ -39,5 +39,6 @@ class SemanticErrorReport(BaseModel):
     document_embedding_similarity: float | None = Field(default=None, ge=0.0, le=1.0)
     document_error_type: DocumentErrorType = "correct"
     is_refusal: bool = False
+    strict: bool = False
     preprocessing_applied: list[str] = Field(default_factory=list)
     metadata: dict[str, object] = Field(default_factory=dict)
