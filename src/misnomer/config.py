@@ -14,8 +14,8 @@ class ScorerConfig(BaseModel):
     The silent fallbacks (frequency-proxy LM, character-similarity embedder)
     invert the SEMANTIC/OBVIOUS taxonomy; strict mode turns that degradation
     into a hard error. All paper/production runs should set strict=True."""
-    torch_dtype: str = "float32"  # "float32" | "float16" | "bfloat16"; consumed by LMScorer (v1.1)
-    device: str = "auto"  # "auto" | "cpu" | "mps" | "cuda"; consumed by LMScorer (v1.1)
+    torch_dtype: str = "float32"  # "float32" | "float16" | "bfloat16"
+    device: str = "cpu"  # "cpu" (default: bit-stable v1.0 behavior) | "auto" | "mps" | "cuda"
     numeric_gate: bool = True  # classify digit-bearing substitutions as NUMERIC (v1.1 gates)
     dictionary_lang: str = "en_US,en_GB"  # hunspell dictionaries for the GARBLE gate (v1.1)
     allograph_map: dict[str, str] | None = None  # None = package default table (v1.1 gates)
