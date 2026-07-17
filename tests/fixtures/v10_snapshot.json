@@ -15,7 +15,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "house",
@@ -25,7 +27,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -35,7 +39,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -45,7 +51,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -55,7 +63,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -65,12 +75,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.0,
   "cer": 0.0,
   "insertion_ratio": 0.0,
@@ -93,6 +110,11 @@
   "document_score": 1.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 1.0,
   "cer": 1.0,
   "insertion_ratio": 0.0,
@@ -122,7 +144,9 @@
     "perplexity": null,
     "embedding_similarity": 0.0,
     "composite_score": 0.0,
-    "char_edit_distance": 3
+    "char_edit_distance": 3,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "house",
@@ -132,7 +156,9 @@
     "perplexity": null,
     "embedding_similarity": 0.0,
     "composite_score": 0.0,
-    "char_edit_distance": 5
+    "char_edit_distance": 5,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -142,7 +168,9 @@
     "perplexity": null,
     "embedding_similarity": 0.0,
     "composite_score": 0.0,
-    "char_edit_distance": 5
+    "char_edit_distance": 5,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -152,7 +180,9 @@
     "perplexity": null,
     "embedding_similarity": 0.0,
     "composite_score": 0.0,
-    "char_edit_distance": 2
+    "char_edit_distance": 2,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -162,7 +192,9 @@
     "perplexity": null,
     "embedding_similarity": 0.0,
     "composite_score": 0.0,
-    "char_edit_distance": 3
+    "char_edit_distance": 3,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -172,12 +204,19 @@
     "perplexity": null,
     "embedding_similarity": 0.0,
     "composite_score": 0.0,
-    "char_edit_distance": 5
+    "char_edit_distance": 5,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 6.0,
   "cer": 29.0,
   "insertion_ratio": 1.0,
@@ -205,7 +244,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "steed",
@@ -215,7 +256,9 @@
     "perplexity": 63390.531157,
     "embedding_similarity": 0.369096,
     "composite_score": 0.541592,
-    "char_edit_distance": 5
+    "char_edit_distance": 5,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -225,7 +268,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -235,7 +280,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -245,7 +292,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -255,12 +304,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.541592,
   "semantic_error_count": 1,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.166667,
   "cer": 0.172414,
   "insertion_ratio": 0.0,
@@ -288,7 +344,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "house",
@@ -298,7 +356,9 @@
     "perplexity": 63390.531157,
     "embedding_similarity": 0.29897,
     "composite_score": 0.499517,
-    "char_edit_distance": 1
+    "char_edit_distance": 1,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -308,7 +368,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -318,7 +380,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -328,7 +392,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -338,12 +404,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.499517,
   "semantic_error_count": 0,
   "obvious_error_count": 1,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.166667,
   "cer": 0.034483,
   "insertion_ratio": 0.0,
@@ -371,7 +444,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "large",
@@ -381,7 +456,9 @@
     "perplexity": 152.767815,
     "embedding_similarity": 0.754461,
     "composite_score": 0.598279,
-    "char_edit_distance": 5
+    "char_edit_distance": 5,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "hound",
@@ -391,7 +468,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "slept",
@@ -401,7 +480,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "near",
@@ -411,7 +492,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -421,7 +504,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "gate",
@@ -431,12 +516,19 @@
     "perplexity": 53.496229,
     "embedding_similarity": 0.616319,
     "composite_score": 0.485013,
-    "char_edit_distance": 4
+    "char_edit_distance": 4,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.541646,
   "semantic_error_count": 2,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.285714,
   "cer": 0.264706,
   "insertion_ratio": 0.0,
@@ -464,7 +556,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "old",
@@ -474,7 +568,9 @@
     "perplexity": null,
     "embedding_similarity": 0.0,
     "composite_score": 0.0,
-    "char_edit_distance": 3
+    "char_edit_distance": 3,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "house",
@@ -484,7 +580,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -494,7 +592,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -504,7 +604,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -514,7 +616,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -524,12 +628,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.166667,
   "cer": 0.137931,
   "insertion_ratio": 0.142857,
@@ -557,7 +668,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "house",
@@ -567,7 +680,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -577,7 +692,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -587,7 +704,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "",
@@ -597,7 +716,9 @@
     "perplexity": null,
     "embedding_similarity": 0.0,
     "composite_score": 0.0,
-    "char_edit_distance": 3
+    "char_edit_distance": 3,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -607,12 +728,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.166667,
   "cer": 0.137931,
   "insertion_ratio": 0.0,
@@ -640,7 +768,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "hxvse",
@@ -650,7 +780,9 @@
     "perplexity": 15060.678136,
     "embedding_similarity": 0.324173,
     "composite_score": 0.473027,
-    "char_edit_distance": 2
+    "char_edit_distance": 2,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -660,7 +792,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -670,7 +804,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -680,7 +816,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -690,12 +828,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.473027,
   "semantic_error_count": 0,
   "obvious_error_count": 1,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.166667,
   "cer": 0.068966,
   "insertion_ratio": 0.0,
@@ -723,7 +868,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -733,7 +880,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "1771",
@@ -743,7 +892,9 @@
     "perplexity": 1.275358,
     "embedding_similarity": 0.656455,
     "composite_score": 0.400915,
-    "char_edit_distance": 2
+    "char_edit_distance": 2,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -753,7 +904,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "press",
@@ -763,7 +916,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "closed",
@@ -773,12 +928,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.400915,
   "semantic_error_count": 1,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.166667,
   "cer": 0.058824,
   "insertion_ratio": 0.0,
@@ -806,7 +968,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "prieſts",
@@ -816,7 +980,9 @@
     "perplexity": 921729.32134,
     "embedding_similarity": 0.306896,
     "composite_score": 0.581778,
-    "char_edit_distance": 1
+    "char_edit_distance": 1,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "read",
@@ -826,7 +992,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -836,7 +1004,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "leſſon",
@@ -846,7 +1016,9 @@
     "perplexity": 2819.531242,
     "embedding_similarity": 0.338852,
     "composite_score": 0.433323,
-    "char_edit_distance": 2
+    "char_edit_distance": 2,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "aloud",
@@ -856,12 +1028,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.50755,
   "semantic_error_count": 0,
   "obvious_error_count": 2,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.333333,
   "cer": 0.088235,
   "insertion_ratio": 0.0,
@@ -889,7 +1068,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "drew",
@@ -899,7 +1080,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "a",
@@ -909,7 +1092,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "mаp",
@@ -919,7 +1104,9 @@
     "perplexity": 145.766646,
     "embedding_similarity": 0.353023,
     "composite_score": 0.356057,
-    "char_edit_distance": 1
+    "char_edit_distance": 1,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "of",
@@ -929,7 +1116,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -939,7 +1128,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "region",
@@ -949,12 +1140,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.356057,
   "semantic_error_count": 1,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.142857,
   "cer": 0.035714,
   "insertion_ratio": 0.0,
@@ -982,7 +1180,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "sang",
@@ -992,7 +1192,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "a",
@@ -1002,7 +1204,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "believèd",
@@ -1012,7 +1216,9 @@
     "perplexity": 63763.840874,
     "embedding_similarity": 0.439682,
     "composite_score": 0.584114,
-    "char_edit_distance": 3
+    "char_edit_distance": 3,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "refrain",
@@ -1022,12 +1228,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.584114,
   "semantic_error_count": 1,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.2,
   "cer": 0.111111,
   "insertion_ratio": 0.0,
@@ -1055,7 +1268,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 1
+    "char_edit_distance": 1,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "house",
@@ -1065,7 +1280,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -1075,7 +1292,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -1085,7 +1304,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -1095,7 +1316,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -1105,12 +1328,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.0,
   "cer": 0.034483,
   "insertion_ratio": 0.0,
@@ -1138,7 +1368,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "house",
@@ -1148,7 +1380,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -1158,7 +1392,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -1168,7 +1404,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -1178,7 +1416,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -1188,12 +1428,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.0,
   "cer": 0.034483,
   "insertion_ratio": 0.0,
@@ -1216,6 +1463,11 @@
   "document_score": 1.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 1.0,
   "cer": 1.068966,
   "insertion_ratio": 0.0,
@@ -1245,7 +1497,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "house",
@@ -1255,7 +1509,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -1265,7 +1521,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -1275,7 +1533,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -1285,7 +1545,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -1295,12 +1557,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.0,
   "cer": 0.0,
   "insertion_ratio": 0.0,
@@ -1330,7 +1599,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "house",
@@ -1340,7 +1611,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "stood",
@@ -1350,7 +1623,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "in",
@@ -1360,7 +1635,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -1370,7 +1647,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "field",
@@ -1380,12 +1659,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.0,
   "semantic_error_count": 0,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.0,
   "cer": 0.0,
   "insertion_ratio": 0.0,
@@ -1415,7 +1701,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "order",
@@ -1425,7 +1713,9 @@
     "perplexity": 247754.986598,
     "embedding_similarity": 0.490307,
     "composite_score": 0.653786,
-    "char_edit_distance": 2
+    "char_edit_distance": 2,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "of",
@@ -1435,7 +1725,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -1445,7 +1737,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "garter",
@@ -1455,7 +1749,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "was",
@@ -1465,7 +1761,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "renewed",
@@ -1475,12 +1773,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.653786,
   "semantic_error_count": 1,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.142857,
   "cer": 0.055556,
   "insertion_ratio": 0.0,
@@ -1508,7 +1813,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -1518,7 +1825,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "second",
@@ -1528,7 +1837,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "year",
@@ -1538,7 +1849,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -1548,7 +1861,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "committee",
@@ -1558,7 +1873,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "published",
@@ -1568,7 +1885,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "its",
@@ -1578,7 +1897,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "findings",
@@ -1588,7 +1909,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "and",
@@ -1598,7 +1921,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -1608,7 +1933,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "town",
@@ -1618,7 +1945,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "council",
@@ -1628,7 +1957,9 @@
     "perplexity": 24982.903217,
     "embedding_similarity": 0.636782,
     "composite_score": 0.675246,
-    "char_edit_distance": 2
+    "char_edit_distance": 2,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "voted",
@@ -1638,7 +1969,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "to",
@@ -1648,7 +1981,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "preserve",
@@ -1658,7 +1993,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "the",
@@ -1668,7 +2005,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "bridge",
@@ -1678,7 +2017,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "for",
@@ -1688,7 +2029,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "another",
@@ -1698,7 +2041,9 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    },
    {
     "predicted_word": "century",
@@ -1708,12 +2053,19 @@
     "perplexity": null,
     "embedding_similarity": 1.0,
     "composite_score": 0.0,
-    "char_edit_distance": 0
+    "char_edit_distance": 0,
+    "delta": null,
+    "context_words": null
    }
   ],
   "document_score": 0.675246,
   "semantic_error_count": 1,
   "obvious_error_count": 0,
+  "numeric_error_count": 0,
+  "normalization_count": 0,
+  "archaizing_count": 0,
+  "garble_count": 0,
+  "homoglyph_count": 0,
   "wer": 0.047619,
   "cer": 0.015748,
   "insertion_ratio": 0.0,

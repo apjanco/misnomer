@@ -5,7 +5,16 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 AlignmentType = Literal["MATCH", "SUBSTITUTION", "INSERTION", "DELETION"]
-ErrorType = Literal["SEMANTIC", "OBVIOUS"]
+ErrorType = Literal[
+    "SEMANTIC",
+    "OBVIOUS",
+    # v1.1 gate classes (scorer_version >= 1.1):
+    "NUMERIC",
+    "NORMALIZATION",
+    "ARCHAIZING",
+    "GARBLE",
+    "HOMOGLYPH",
+]
 ScorerMode = Literal["full", "standard", "text_only"]
 DocumentErrorType = Literal["correct", "partial", "hallucinated", "refusal"]
 
@@ -19,6 +28,12 @@ class WordScore(BaseModel):
     embedding_similarity: float | None = Field(default=None, ge=0.0, le=1.0)
     composite_score: float = Field(default=0.0, ge=0.0, le=1.0)
     char_edit_distance: int = Field(default=0, ge=0)
+    # v1.1: Δ = log P(predicted|context) − log P(truth|context), full-word;
+    # positive = the auditor's prior prefers what was written.
+    delta: float | None = None
+    # v1.1: ground-truth words preceding the substitution (Δ reliability flag;
+    # 0–1 context words degenerate toward a frequency contrast).
+    context_words: int | None = None
 
 
 class SemanticErrorReport(BaseModel):
@@ -32,6 +47,12 @@ class SemanticErrorReport(BaseModel):
     document_score: float = Field(ge=0.0, le=1.0)
     semantic_error_count: int = Field(ge=0)
     obvious_error_count: int = Field(ge=0)
+    # v1.1 gate-class counts (always 0 under scorer_version < 1.1):
+    numeric_error_count: int = Field(default=0, ge=0)
+    normalization_count: int = Field(default=0, ge=0)
+    archaizing_count: int = Field(default=0, ge=0)
+    garble_count: int = Field(default=0, ge=0)
+    homoglyph_count: int = Field(default=0, ge=0)
     wer: float = Field(ge=0.0)
     cer: float = Field(ge=0.0)
     insertion_ratio: float = Field(default=0.0, ge=0.0)

@@ -17,7 +17,7 @@ class ScorerConfig(BaseModel):
     torch_dtype: str = "float32"  # "float32" | "float16" | "bfloat16"
     device: str = "cpu"  # "cpu" (default: bit-stable v1.0 behavior) | "auto" | "mps" | "cuda"
     numeric_gate: bool = True  # classify digit-bearing substitutions as NUMERIC (v1.1 gates)
-    dictionary_lang: str = "en_US,en_GB"  # hunspell dictionaries for the GARBLE gate (v1.1)
+    dictionary_lang: str = "en"  # pyspellchecker language for the GARBLE gate (v1.1)
     allograph_map: dict[str, str] | None = None  # None = package default table (v1.1 gates)
     multilingual_embedder_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     semantic_threshold: float = Field(default=0.35, ge=0.0, le=1.0)
