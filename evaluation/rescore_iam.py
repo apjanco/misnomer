@@ -76,6 +76,9 @@ MODELS = {
     # (trained on the IAM RWTH train split — cross-system comparisons must
     # restrict to rows with split == "test"; each row carries the split).
     "pylaia-iam": "pylaia-iam_results.jsonl",
+    # same model decoded with its 6-gram character LM (weight 1.5,
+    # lexicon-constrained) — the explicit-shallow-prior rung of the ladder.
+    "pylaia-iam-lm": "pylaia-iam-lm_results.jsonl",
 }
 
 INDEX_KEYS = ("index", "image_idx", "image_path")
