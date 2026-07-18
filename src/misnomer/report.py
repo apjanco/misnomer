@@ -53,6 +53,9 @@ class SemanticErrorReport(BaseModel):
     archaizing_count: int = Field(default=0, ge=0)
     garble_count: int = Field(default=0, ge=0)
     homoglyph_count: int = Field(default=0, ge=0)
+    # v1.1 provenance: which orthographic tradition profile the allograph
+    # gate ran under (None under scorer_version < 1.1).
+    tradition: str | None = None
     wer: float = Field(ge=0.0)
     cer: float = Field(ge=0.0)
     insertion_ratio: float = Field(default=0.0, ge=0.0)

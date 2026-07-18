@@ -7,6 +7,7 @@ from rapidfuzz.distance import Levenshtein
 
 from misnomer.aligner import align_words, char_edit_distance, tokenize_words
 from misnomer.classifier import SpellDictionary, classify_substitution, classify_substitution_v2
+from misnomer.traditions import resolve_tradition
 from misnomer.composite import composite_score, normalize_perplexities
 from misnomer.config import ScorerConfig
 from misnomer.models.embedder import Embedder
@@ -69,6 +70,8 @@ def _score_with_models(
     _enforce_strict(cfg, lm, embedder, dictionary)
     ground_truth = ground_truth or ""
 
+    profile = resolve_tradition(cfg) if cfg.gates_active else None
+
     pre = preprocess(predicted)
     predicted = pre.text
 
@@ -93,6 +96,7 @@ def _score_with_models(
             document_error_type="refusal",
             is_refusal=True,
             strict=cfg.strict,
+            tradition=profile.name if profile else None,
             preprocessing_applied=pre.transformations,
             metadata=metadata or {},
         )
@@ -178,6 +182,7 @@ def _score_with_models(
                     similarity,
                     cfg,
                     dictionary,
+                    profile=profile,
                 )
             elif similarity is not None:
                 error_type = classify_substitution(similarity, cfg.semantic_threshold)
@@ -289,6 +294,7 @@ def _score_with_models(
         document_error_type=_document_error_type(),
         is_refusal=False,
         strict=cfg.strict,
+        tradition=profile.name if profile else None,
         preprocessing_applied=pre.transformations,
         metadata=metadata or {},
     )

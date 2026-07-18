@@ -54,6 +54,8 @@ from misnomer.config import ScorerConfig
 from misnomer.models.embedder import Embedder
 from misnomer.models.lm import LMScorer
 from misnomer.scorer import _build_dictionary, _enforce_strict, _score_with_models
+from misnomer.traditions import resolve_tradition
+from misnomer.unicode_ops import unicode_versions
 
 EVAL_DIR = Path(__file__).parent
 N_LINES = 10373  # IAM lines; every input file must dedupe to exactly this
@@ -206,6 +208,8 @@ def main() -> int:
             "device": lm.resolved_device,
             "dtype": lm.resolved_dtype,
             "embedder": embedder.resolved_model_name,
+            "tradition": resolve_tradition(cfg).name,
+            "unicode": unicode_versions(),
         },
         "versions": package_versions(),
         "python": sys.version,

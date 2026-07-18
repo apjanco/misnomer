@@ -17,7 +17,9 @@ MIXED_GT = "The priests gave the horse 1717 coins"
 
 @pytest.fixture(scope="module")
 def mixed_report():
-    return score(MIXED_PRED, MIXED_GT, config=ScorerConfig(**CFG_11))
+    # period fixture -> period profile, declared explicitly
+    cfg = ScorerConfig(**CFG_11, tradition="early-modern-latin-print")
+    return score(MIXED_PRED, MIXED_GT, config=cfg)
 
 
 def test_mixed_document_class_counts(mixed_report):
@@ -27,6 +29,17 @@ def test_mixed_document_class_counts(mixed_report):
     assert r.numeric_error_count == 1  # 1771
     assert r.garble_count == 0 and r.homoglyph_count == 0 and r.normalization_count == 0
     assert r.scorer_mode == "full" and r.strict is True
+    assert r.tradition == "early-modern-latin-print"
+
+
+def test_no_silent_period_assumptions():
+    """The same document under the DEFAULT profile: gaue is a non-word on a
+    modern document (GARBLE), archaic only under a declared tradition;
+    prieſts stays an allograph via Unicode identity, profile-independent."""
+    r = score(MIXED_PRED, MIXED_GT, config=ScorerConfig(**CFG_11))
+    assert r.tradition == "modern"
+    assert r.archaizing_count == 1  # prieſts (compatibility characters)
+    assert r.garble_count == 1  # gaue
 
 
 def test_mixed_document_deltas_and_context(mixed_report):
@@ -63,6 +76,7 @@ def test_normalization_direction_end_to_end():
 
 def test_v10_stays_inert():
     r = score(MIXED_PRED, MIXED_GT, config=ScorerConfig(scorer_version="1.0"))
+    assert r.tradition is None
     assert r.numeric_error_count == 0
     assert r.archaizing_count == 0
     assert r.normalization_count == 0

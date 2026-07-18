@@ -16,9 +16,16 @@ class ScorerConfig(BaseModel):
     into a hard error. All paper/production runs should set strict=True."""
     torch_dtype: str = "float32"  # "float32" | "float16" | "bfloat16"
     device: str = "cpu"  # "cpu" (default: bit-stable v1.0 behavior) | "auto" | "mps" | "cuda"
-    numeric_gate: bool = True  # classify digit-bearing substitutions as NUMERIC (v1.1 gates)
+    numeric_gate: bool = True  # classify numeral-bearing substitutions as NUMERIC (v1.1 gates)
     dictionary_lang: str = "en"  # pyspellchecker language for the GARBLE gate (v1.1)
-    allograph_map: dict[str, str] | None = None  # None = package default table (v1.1 gates)
+    tradition: str | dict | None = None
+    """Orthographic tradition profile for the allograph gate (v1.1).
+
+    A built-in name ("modern", "early-modern-latin-print"), an inline
+    profile dict, or None for the default: "modern", i.e. no period
+    equivalences unless explicitly declared — the classifier never
+    applies a transcription convention silently."""
+    allograph_map: dict[str, str] | None = None  # legacy: becomes a custom tradition profile
     multilingual_embedder_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     semantic_threshold: float = Field(default=0.35, ge=0.0, le=1.0)
     perplexity_weight: float = Field(default=0.4, ge=0.0, le=1.0)

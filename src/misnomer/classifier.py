@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
-import unicodedata
 
 from misnomer.config import ScorerConfig
+from misnomer.traditions import TraditionProfile, resolve_tradition
+from misnomer.unicode_ops import skeleton
 
 log = logging.getLogger(__name__)
 
@@ -17,78 +18,22 @@ def classify_substitution(embedding_similarity: float, threshold: float = 0.5) -
 
 
 # ---------------------------------------------------------------------------
-# v1.1 gate tables — knowledge as data, overridable via ScorerConfig.
-# Nothing here is specific to any evaluation corpus.
+# v1.1 gates. Knowledge sources, by layer:
+#   character identity  -> the Unicode Standard (compatibility caseless
+#                          matching) and UTS #39 skeletons; see unicode_ops
+#   orthographic usage  -> a declared TraditionProfile; see traditions
+#   lexicon             -> SpellDictionary below
+# Nothing here is specific to any evaluation corpus (enforced by
+# tests/test_hygiene.py), and no convention is applied silently: period
+# equivalences exist only under an explicitly selected tradition.
 # ---------------------------------------------------------------------------
 
-# Archaic character/sequence -> modern equivalent (Latin-script European
-# print). These classes are the ones documented by transcription standards
-# (e.g. the CATMuS guidelines); override via ScorerConfig.allograph_map.
-DEFAULT_ALLOGRAPH_MAP: dict[str, str] = {
-    "ſ": "s",
-    "ß": "ss",
-    "ẞ": "SS",
-    "æ": "ae",
-    "Æ": "AE",
-    "œ": "oe",
-    "Œ": "OE",
-    "ﬀ": "ff",
-    "ﬁ": "fi",
-    "ﬂ": "fl",
-    "ﬃ": "ffi",
-    "ﬄ": "ffl",
-    "ﬅ": "st",
-    "ﬆ": "st",
-}
 
-# Positional-usage equivalences: both characters are modern; the archaic
-# *usage* (u-for-v as in "vpon", i-for-j, w-for-u as in "wnto") is what varies.
-# Folded for equality testing; direction is decided by dictionary membership.
-# Note: Unicode casefolding already folds ſ->s and ß->ss underneath this
-# layer, so those DEFAULT_ALLOGRAPH_MAP entries serve direction detection.
-EQUIVALENCE_FOLD: dict[str, str] = {"v": "u", "j": "i", "w": "u"}
-
-# Cross-script lookalikes, curated subset of Unicode TR#39 confusables.
-# A word equal to its counterpart after this fold, but differing in script
-# inventory, is a homoglyph substitution: invisible to the eye, corrosive
-# to search, impossible for closed-inventory recognizers.
-CONFUSABLES: dict[str, str] = {
-    "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "х": "x", "к": "k",
-    "і": "i", "ј": "j", "ѕ": "s", "у": "y", "ԁ": "d", "ɡ": "g", "ν": "v",
-    "ο": "o", "α": "a", "Α": "A", "Β": "B", "Ε": "E", "Ζ": "Z", "Η": "H",
-    "Ι": "I", "Κ": "K", "Μ": "M", "Ν": "N", "Ο": "O", "Ρ": "P", "Τ": "T",
-    "Υ": "Y", "Χ": "X",
-}
-
-
-def _has_digit(word: str) -> bool:
-    return any(ch.isdigit() for ch in word)
-
-
-def _scripts(word: str) -> frozenset[str]:
-    scripts: set[str] = set()
-    for ch in word:
-        if ch.isalpha():
-            name = unicodedata.name(ch, "")
-            scripts.add(name.split(" ")[0] if name else "UNKNOWN")
-    return frozenset(scripts)
-
-
-def _confusable_fold(word: str) -> str:
-    return "".join(CONFUSABLES.get(ch, ch) for ch in word)
-
-
-def _allograph_fold(word: str, allograph_map: dict[str, str]) -> str:
-    out = word.casefold()
-    for archaic, modern in allograph_map.items():
-        out = out.replace(archaic.casefold(), modern.casefold())
-    for a, b in EQUIVALENCE_FOLD.items():
-        out = out.replace(a, b)
-    return out
-
-
-def _has_archaic_chars(word: str, allograph_map: dict[str, str]) -> bool:
-    return any(ch in word for ch in allograph_map)
+def _has_numeral(word: str) -> bool:
+    # isnumeric (not isdigit) so numeral display forms — Roman-numeral
+    # codepoints, vulgar fractions, circled digits — are caught by rule
+    # rather than dragged into the allograph gate by compatibility folding.
+    return any(ch.isnumeric() for ch in word)
 
 
 class SpellDictionary:
@@ -127,37 +72,42 @@ def classify_substitution_v2(
     embedding_similarity: float | None,
     cfg: ScorerConfig,
     dictionary: SpellDictionary | None = None,
+    profile: TraditionProfile | None = None,
 ) -> str | None:
     """Ordered gates, then the similarity threshold.
 
-    NUMERIC -> HOMOGLYPH -> allograph (NORMALIZATION | ARCHAIZING) ->
-    GARBLE -> SEMANTIC/OBVIOUS. Deterministic gates run first because
-    embedding similarity is unreliable exactly where they apply (a non-word
-    like a glyph-confused string can embed close to its target and would
-    otherwise be counted as a semantic error).
-    """
-    allograph_map = cfg.allograph_map or DEFAULT_ALLOGRAPH_MAP
+    NUMERIC -> allograph (NORMALIZATION | ARCHAIZING) -> HOMOGLYPH ->
+    GARBLE -> SEMANTIC/OBVIOUS.
 
-    # 1. Digit-bearing substitutions: embeddings and priors are both nearly
-    # uninformative for numbers; classify by rule.
-    if cfg.numeric_gate and (_has_digit(predicted) or _has_digit(ground_truth)):
+    Character identity precedes visual similarity: compatibility
+    equivalence says what a character IS (long s is s), the TR39 skeleton
+    says what it LOOKS like (long s resembles f). A substitution that is
+    the same text in a different display form must classify as an
+    allograph change, never as a lookalike. Deterministic gates run before
+    the embedding threshold because similarity is unreliable exactly where
+    they apply (a glyph-confused non-word can embed close to its target
+    and would otherwise be counted as a semantic error).
+    """
+    if profile is None:
+        profile = resolve_tradition(cfg)
+
+    # 1. Numeral-bearing substitutions: embeddings and priors are both
+    # nearly uninformative for numbers; classify by rule.
+    if cfg.numeric_gate and (_has_numeral(predicted) or _has_numeral(ground_truth)):
         return "NUMERIC"
 
-    # 2. Homoglyphs: identical after cross-script folding, different scripts.
-    if predicted != ground_truth and _confusable_fold(predicted).casefold() == _confusable_fold(
-        ground_truth
-    ).casefold():
-        if _scripts(predicted) != _scripts(ground_truth):
-            return "HOMOGLYPH"
-
-    # 3. Allograph pairs: equal under the archaic/modern fold. Direction by
-    # definitive archaic characters first, dictionary membership second.
-    if _allograph_fold(predicted, allograph_map) == _allograph_fold(ground_truth, allograph_map):
-        pred_archaic = _has_archaic_chars(predicted, allograph_map)
-        truth_archaic = _has_archaic_chars(ground_truth, allograph_map)
-        if pred_archaic and not truth_archaic:
+    # 2. Allograph pairs: same text under Unicode compatibility caseless
+    # matching plus the declared tradition's equivalences. Direction: the
+    # side carrying compatibility characters (or the profile's markers) is
+    # the archaic side; otherwise lexicon membership decides; if direction
+    # remains undecidable (e.g. both words in the lexicon), report the
+    # weaker claim rather than guess — counted and audited in validation.
+    if profile.fold(predicted) == profile.fold(ground_truth):
+        pred_marked = profile.marks_archaic(predicted)
+        truth_marked = profile.marks_archaic(ground_truth)
+        if pred_marked and not truth_marked:
             return "ARCHAIZING"
-        if truth_archaic and not pred_archaic:
+        if truth_marked and not pred_marked:
             return "NORMALIZATION"
         if dictionary is not None and dictionary.available:
             pred_known = dictionary.known(predicted)
@@ -167,6 +117,12 @@ def classify_substitution_v2(
             if pred_known and not truth_known:
                 return "NORMALIZATION"
         return "NORMALIZATION"
+
+    # 3. Homoglyphs: visually confusable as written, by the standard's own
+    # judgment (TR39 skeleton equality on the raw glyphs). Covers both
+    # cross-script lookalikes and the same-script minim class (rn/m).
+    if predicted != ground_truth and skeleton(predicted) == skeleton(ground_truth):
+        return "HOMOGLYPH"
 
     # 4. Non-words: visible damage, whatever the embedding thinks.
     if dictionary is not None and dictionary.available and not dictionary.known(predicted):

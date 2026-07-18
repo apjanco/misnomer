@@ -2,6 +2,7 @@ from .config import ScorerConfig
 from .highlight import highlight
 from .report import DocumentErrorType, SemanticErrorReport, WordScore
 from .scorer import StrictModeError, score, score_batch, score_jsonl
+from .traditions import TraditionProfile, builtin_traditions
 
 __all__ = [
     "score",
@@ -13,4 +14,6 @@ __all__ = [
     "WordScore",
     "DocumentErrorType",
     "StrictModeError",
+    "TraditionProfile",
+    "builtin_traditions",
 ]
