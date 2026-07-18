@@ -86,3 +86,17 @@ flips (Δ magnitudes drift, mean ≈0.4 — do not cite bf16 Δ to decimals), an
 is ~4x slower than fp32 on MPS, so fp32 is the reference configuration.
 Every run writes a `manifest.json` with config, package versions, input
 file hashes, dedupe statistics, and timings.
+
+## kraken-mccatmus baseline (added 2026-07-18)
+
+`kraken-mccatmus_results.jsonl`: kraken 7.0.2 with McCATMuS_nfd_nofix_V1
+(Zenodo 10.5281/zenodo.13788177 — the only public kraken model claiming
+modern English handwriting) over the same Teklia/IAM-line images, generated
+by `run_kraken_mccatmus.py` (synthetic-baseline segmentation; the blla
+neural segmenter is impractically slow on these line strips — see the
+script docstring). 10,373 rows, complete, 1 empty, mean CER 34.2%.
+Purpose: a second conventional-ATR control besides tesseract. Its
+misnomer profile matches theory: GARBLE-dominated, and its accidental
+real-word substitutions are prior-preferred only ~8% of the time
+(SEMANTIC median Δ = −6.9) — the no-deep-prior baseline, now replicated
+across two independent conventional systems.

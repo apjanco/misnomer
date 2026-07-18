@@ -68,6 +68,10 @@ MODELS = {
     "claude-vision": "claude-vision_results.jsonl",
     "gemini-portkey": "gemini-portkey_results.jsonl",
     "tesseract": "tesseract_results.jsonl",
+    # conventional-ATR baseline added 2026-07-18: kraken McCATMuS_nfd_nofix_V1
+    # (Zenodo 13788177) on the same Teklia/IAM-line images; see the run
+    # script's docstring for the synthetic-baseline segmentation method.
+    "kraken-mccatmus": "kraken-mccatmus_results.jsonl",
 }
 
 INDEX_KEYS = ("index", "image_idx", "image_path")
