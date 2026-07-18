@@ -72,6 +72,10 @@ MODELS = {
     # (Zenodo 13788177) on the same Teklia/IAM-line images; see the run
     # script's docstring for the synthetic-baseline segmentation method.
     "kraken-mccatmus": "kraken-mccatmus_results.jsonl",
+    # in-domain conventional baseline added 2026-07-18: Teklia/pylaia-iam
+    # (trained on the IAM RWTH train split — cross-system comparisons must
+    # restrict to rows with split == "test"; each row carries the split).
+    "pylaia-iam": "pylaia-iam_results.jsonl",
 }
 
 INDEX_KEYS = ("index", "image_idx", "image_path")
