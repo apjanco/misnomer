@@ -246,3 +246,42 @@ if __name__ == "__main__":
     import sys
     base = sys.argv[1] if len(sys.argv) > 1 else "evaluation/derived/full_v11"
     print(summary_table({name: base for name in SYSTEMS}))
+
+
+# ---------------------------------------------------------------------------
+# Smooth-class precision screens (added after the 2026-07-19 manual sweep of
+# ~330 stratified smooth substitutions across all ten systems). Applied to
+# IER+ as a sensitivity bound; the sweep's precision estimates: VLM smooth
+# classes ~76-86% clean, conventional systems ~35-50% (their smooth items
+# are mostly positional pairings inside wrecked lines).
+# ---------------------------------------------------------------------------
+
+def smooth_screens(sub: dict, gt_tokens: list[str], pred_line: str) -> str | None:
+    """Return the artifact class of a Δ>0 sieve substitution, or None if clean.
+
+    "fragment-edge": the GT word is the line's first/last token and one word
+        is an affix of the other — IAM ground truth keeps hyphen-broken
+        line-edge fragments ("panionship"), which models complete; the
+        completion earns a large spurious Δ.
+    "diaeresis": IAM encodes umlaut/diaeresis as a double quote inside the
+        word (nai"vety, Ko"then); modern spellings are convention, not error.
+    "boiler-residue": reasoning/markup markers in the prediction line that
+        survived the length filter (backticks, bullet arrows).
+    "low-anchor": anchor_confidence < 0.25 — the pairing is positional, not
+        supported by ink.
+    """
+    g = sub["ground_truth_word"]
+    stripped = [t.strip(".,\"'") for t in gt_tokens]
+    p, gl = sub["predicted_word"].casefold(), g.casefold()
+    if stripped and (g == stripped[0] or g == stripped[-1]) and len(g) >= 2 \
+            and p != gl and (p.endswith(gl) or p.startswith(gl)
+                             or gl.endswith(p) or gl.startswith(p)):
+        return "fragment-edge"
+    if '"' in g.strip('"'):
+        return "diaeresis"
+    if any(m in pred_line for m in ("```", "`", "* ", "->")):
+        return "boiler-residue"
+    conf = sub.get("anchor_confidence")
+    if conf is not None and conf < 0.25:
+        return "low-anchor"
+    return None
