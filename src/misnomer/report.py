@@ -14,6 +14,9 @@ ErrorType = Literal[
     "ARCHAIZING",
     "GARBLE",
     "HOMOGLYPH",
+    # v1.1: character anchoring says this "substitution" is a segmentation
+    # event (join/split/fragment), not one word read as another.
+    "SEGMENTATION",
 ]
 ScorerMode = Literal["full", "standard", "text_only"]
 DocumentErrorType = Literal["correct", "partial", "hallucinated", "refusal"]
@@ -34,6 +37,10 @@ class WordScore(BaseModel):
     # v1.1: ground-truth words preceding the substitution (Δ reliability flag;
     # 0–1 context words degenerate toward a frequency contrast).
     context_words: int | None = None
+    # v1.1: fraction of identically anchored characters between the two
+    # words under character-level alignment (see anchor.py); low values
+    # mark pairs the aligner matched by position rather than by ink.
+    anchor_confidence: float | None = None
 
 
 class SemanticErrorReport(BaseModel):
@@ -53,6 +60,7 @@ class SemanticErrorReport(BaseModel):
     archaizing_count: int = Field(default=0, ge=0)
     garble_count: int = Field(default=0, ge=0)
     homoglyph_count: int = Field(default=0, ge=0)
+    segmentation_count: int = Field(default=0, ge=0)
     # v1.1 provenance: which orthographic tradition profile the allograph
     # gate ran under (None under scorer_version < 1.1).
     tradition: str | None = None

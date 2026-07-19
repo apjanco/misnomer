@@ -6,6 +6,7 @@ from pathlib import Path
 from rapidfuzz.distance import Levenshtein
 
 from misnomer.aligner import align_words, char_edit_distance, tokenize_words
+from misnomer.anchor import WordAnchors
 from misnomer.classifier import SpellDictionary, classify_substitution, classify_substitution_v2
 from misnomer.traditions import resolve_tradition
 from misnomer.composite import composite_score, normalize_perplexities
@@ -120,13 +121,39 @@ def _score_with_models(
     substitution_gt_indices: list[int] = []
     substitution_words: dict[int, str] = {}
 
+    # v1.1: character anchoring over the raw strings, valid only when its
+    # whitespace tokenization reproduces the alignment's token sequences
+    # exactly (else anchor fields stay None — safe degradation).
+    anchors: WordAnchors | None = None
+    if cfg.gates_active:
+        candidate = WordAnchors(predicted, ground_truth)
+        align_pred = [it.predicted_word for it in alignment
+                      if it.alignment_type in {"MATCH", "SUBSTITUTION", "INSERTION"}]
+        align_gt = [it.ground_truth_word for it in alignment
+                    if it.alignment_type in {"MATCH", "SUBSTITUTION", "DELETION"}]
+        if candidate.pred_texts() == align_pred and candidate.gt_texts() == align_gt:
+            anchors = candidate
+
+    # (anchor_confidence, segmentation) per substitution, in alignment order
+    anchor_info: list[tuple[float | None, str | None]] = []
+
     gt_idx = -1
+    pred_idx = -1
     for item in alignment:
+        if item.alignment_type in {"MATCH", "SUBSTITUTION", "INSERTION"}:
+            pred_idx += 1
         if item.alignment_type in {"MATCH", "SUBSTITUTION", "DELETION"}:
             gt_idx += 1
         if item.alignment_type == "SUBSTITUTION":
             substitution_gt_indices.append(gt_idx)
-            substitution_words[gt_idx] = item.predicted_word
+            if anchors is not None:
+                confidence, segmentation = anchors.describe(pred_idx, gt_idx)
+            else:
+                confidence, segmentation = None, None
+            anchor_info.append((confidence, segmentation))
+            # segmentation events are not readings: no Δ is computed for them
+            if segmentation is None:
+                substitution_words[gt_idx] = item.predicted_word
 
     substitution_raw_perplexities = [gt_perplexities[i] for i in substitution_gt_indices]
     substitution_norm_perplexities = normalize_perplexities(substitution_raw_perplexities)
@@ -175,7 +202,12 @@ def _score_with_models(
             else:
                 similarity = None
 
-            if cfg.gates_active:
+            confidence, segmentation = (
+                anchor_info[subst_cursor - 1] if cfg.gates_active else (None, None)
+            )
+            if segmentation is not None:
+                error_type = "SEGMENTATION"
+            elif cfg.gates_active:
                 error_type = classify_substitution_v2(
                     item.predicted_word,
                     item.ground_truth_word,
@@ -214,6 +246,7 @@ def _score_with_models(
                 char_edit_distance=distance,
                 delta=deltas.get(position) if cfg.gates_active else None,
                 context_words=position if cfg.gates_active else None,
+                anchor_confidence=confidence,
             )
             word_scores.append(ws)
             continue
@@ -286,6 +319,7 @@ def _score_with_models(
         archaizing_count=class_counts["ARCHAIZING"],
         garble_count=class_counts["GARBLE"],
         homoglyph_count=class_counts["HOMOGLYPH"],
+        segmentation_count=class_counts["SEGMENTATION"],
         wer=wer,
         cer=cer,
         insertion_ratio=insertion_ratio,

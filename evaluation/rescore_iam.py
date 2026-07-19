@@ -268,7 +268,8 @@ def main() -> int:
                     n_refusal += 1
                 for key in ("semantic_error_count", "obvious_error_count",
                             "numeric_error_count", "normalization_count",
-                            "archaizing_count", "garble_count", "homoglyph_count"):
+                            "archaizing_count", "garble_count", "homoglyph_count",
+                            "segmentation_count"):
                     class_totals[key] += getattr(report, key)
 
                 position = {id(w): p for p, w in enumerate(report.word_scores)}
@@ -303,6 +304,8 @@ def main() -> int:
                     "archaizing_count": report.archaizing_count,
                     "garble_count": report.garble_count,
                     "homoglyph_count": report.homoglyph_count,
+                    "segmentation_count": report.segmentation_count,
+                    "tradition": report.tradition,
                     "substitutions": [w.model_dump() for w in subs],
                 }, ensure_ascii=False) + "\n")
 
