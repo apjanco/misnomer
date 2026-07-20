@@ -55,6 +55,9 @@ class Line:
     excluded: str | None  # None = included; else reason
     visible_subs: int
     substitutions: list[dict] = field(default_factory=list)  # non-excluded subs
+    # raw texts, carried so the smooth screens can run through this module
+    gt_tokens: list[str] = field(default_factory=list)
+    pred_line: str = ""
 
 
 @dataclass
@@ -73,13 +76,14 @@ class SystemData:
 
 
 def _raw_meta(raw: str):
-    gtw, split = {}, {}
+    """index -> (gt token list, predicted text, split)."""
+    meta = {}
     for line in open(EVAL_DIR / f"{raw}_results.jsonl", encoding="utf-8"):
         r = json.loads(line)
         i = int(r.get("index", r.get("image_idx", r.get("image_path"))))
-        gtw[i] = len((r.get("ground_truth") or "").split())
-        split[i] = r.get("split")
-    return gtw, split
+        meta[i] = ((r.get("ground_truth") or "").split(),
+                   r.get("predicted_text") or "", r.get("split"))
+    return meta
 
 
 def _collect_convergence(scored_dir: Path) -> set[tuple[int, str, str]]:
@@ -88,10 +92,10 @@ def _collect_convergence(scored_dir: Path) -> set[tuple[int, str, str]]:
         path = scored_dir / f"{raw}_rescored.jsonl"
         if not path.exists():
             continue
-        _, split = _raw_meta(raw)
+        meta = _raw_meta(raw)
         for line in open(path, encoding="utf-8"):
             rec = json.loads(line)
-            if test_only and split.get(rec["index"]) != "test":
+            if test_only and meta[rec["index"]][2] != "test":
                 continue
             for s in rec["substitutions"]:
                 conv[(rec["index"], s["ground_truth_word"].casefold(),
@@ -105,27 +109,29 @@ def load_system(name: str, scored_dir: str | Path,
     scored_dir = Path(scored_dir)
     if gt_suspect is None:
         gt_suspect = _collect_convergence(scored_dir)
-    gtw, split = _raw_meta(raw)
+    meta = _raw_meta(raw)
 
     lines: list[Line] = []
     n_scored = n_ref = n_deg = n_hal = n_sus = 0
     for line in open(scored_dir / f"{raw}_rescored.jsonl", encoding="utf-8"):
         rec = json.loads(line)
         i = rec["index"]
-        if test_only and split.get(i) != "test":
+        gt_tokens, pred_line, split = meta[i]
+        if test_only and split != "test":
             continue
         n_scored += 1
+        n_words = len(gt_tokens)
         if rec["is_refusal"]:
             n_ref += 1
-            lines.append(Line(i, gtw[i], "refusal", 0))
+            lines.append(Line(i, n_words, "refusal", 0))
             continue
         if "pred_len" in rec and rec["pred_len"] > 2 * rec["gt_len"] + 20:
             n_deg += 1
-            lines.append(Line(i, gtw[i], "degenerate", 0))
+            lines.append(Line(i, n_words, "degenerate", 0))
             continue
         if rec.get("document_error_type") == "hallucinated":
             n_hal += 1
-            lines.append(Line(i, gtw[i], "hallucinated", 0))
+            lines.append(Line(i, n_words, "hallucinated", 0))
             continue
         subs = []
         visible = 0
@@ -137,7 +143,7 @@ def load_system(name: str, scored_dir: str | Path,
             if s["error_type"] in VISIBLE_DEFAULT:
                 visible += 1
             subs.append(s)
-        lines.append(Line(i, gtw[i], None, visible, subs))
+        lines.append(Line(i, n_words, None, visible, subs, gt_tokens, pred_line))
     return SystemData(name, lines, n_scored, n_ref, n_deg, n_hal, n_sus)
 
 
@@ -156,14 +162,29 @@ def stratum_of(sub: dict, position_hint: int | None = None) -> str:
 
 
 def _totals(data: SystemData, deadband: float = 0.0,
-            stratum: str | None = None):
+            stratum: str | None = None, screened: bool = False):
+    """Counting core. Decisions encoded here:
+
+    - SEGMENTATION events are never substitutions: excluded from the
+      substitution denominator entirely (they are alignment facts, not
+      readings; counting them deflated conventional systems' per-error
+      rates — i.e. biased *against* the paper's claim — but was wrong).
+    - screened=True additionally drops sieve-class substitutions whose
+      smooth_screens() verdict is non-None (fragment-edge, diaeresis,
+      boiler-residue, low-anchor) from ALL counts. Report both modes.
+    """
     words = npass = nplus = nsubs = 0
     for ln in data.lines:
         if ln.excluded:
             continue
         words += ln.gt_words
         for s in ln.substitutions:
+            if s["error_type"] == "SEGMENTATION":
+                continue
             if stratum and stratum_of(s) != stratum:
+                continue
+            if screened and s["error_type"] in SIEVE and \
+                    smooth_screens(s, ln.gt_tokens, ln.pred_line) is not None:
                 continue
             nsubs += 1
             if s["error_type"] in SIEVE:
@@ -222,30 +243,60 @@ def bootstrap_ci(data: SystemData, metric, n_boot: int = 1000,
     return lo, hi
 
 
-def summary_table(scored_dirs: dict[str, str | Path]) -> str:
+def summary_table(scored_dirs: dict[str, str | Path], ci: bool = False) -> str:
+    """Main table, raw and screened side by side. ci=True adds a 95% line-
+    bootstrap interval on the screened IER+ (slower)."""
     gt_suspect: set = set()
     dirs = {Path(d) for d in scored_dirs.values()}
     for d in dirs:
         gt_suspect |= _collect_convergence(d)
-    out = [f"{'system':<22} {'cov':>5} {'IER':>7} {'IER+':>6} {'share':>6} "
-           f"{'sm/100':>7} {'trap':>12} {'seg':>5}"]
+    hdr = (f"{'system':<22} {'cov':>5} {'IER':>7} {'IER+':>6} {'IER+scr':>8} "
+           f"{'share':>6} {'sh-scr':>7} {'sm/100scr':>10} {'trap':>12} {'seg':>5}")
+    out = [hdr]
     for name, sd in scored_dirs.items():
         data = load_system(name, sd, gt_suspect)
         segs = sum(1 for ln in data.lines if not ln.excluded
                    for s in ln.substitutions if s["error_type"] == "SEGMENTATION")
         t, nclean = trap_rate(data)
-        out.append(
+        row = (
             f"{name:<22} {data.coverage:>5.0%} {ier(data):>7.1f} "
-            f"{ier_plus(data):>6.1f} {smooth_share(data):>6.0%} "
-            f"{smooth_per_100_subs(data):>7.1f} "
+            f"{ier_plus(data):>6.1f} {ier_plus(data, screened=True):>8.2f} "
+            f"{smooth_share(data):>6.0%} {smooth_share(data, screened=True):>7.0%} "
+            f"{smooth_per_100_subs(data, screened=True):>10.1f} "
             f"{t:>6.0%} (n={nclean:<4}) {segs:>4}")
+        if ci:
+            lo, hi = bootstrap_ci(data, lambda d: ier_plus(d, screened=True))
+            row += f"  CI[{lo:.2f},{hi:.2f}]"
+        out.append(row)
+    return "\n".join(out)
+
+
+def sensitivity_tables(scored_dirs: dict[str, str | Path]) -> str:
+    """Deadband sensitivity (Δ>0 / >0.5 / >1.0) and entity strata, screened."""
+    gt_suspect: set = set()
+    for d in {Path(d) for d in scored_dirs.values()}:
+        gt_suspect |= _collect_convergence(d)
+    out = [f"{'system':<22} {'IER+ Δ>0':>9} {'Δ>0.5':>7} {'Δ>1.0':>7} "
+           f"{'names':>7} {'numbers':>8} {'common':>7}"]
+    for name, sd in scored_dirs.items():
+        data = load_system(name, sd, gt_suspect)
+        out.append(
+            f"{name:<22} {ier_plus(data, screened=True):>9.2f} "
+            f"{ier_plus(data, deadband=0.5, screened=True):>7.2f} "
+            f"{ier_plus(data, deadband=1.0, screened=True):>7.2f} "
+            f"{ier_plus(data, screened=True, stratum='name'):>7.2f} "
+            f"{ier_plus(data, screened=True, stratum='number'):>8.2f} "
+            f"{ier_plus(data, screened=True, stratum='common'):>7.2f}")
     return "\n".join(out)
 
 
 if __name__ == "__main__":
     import sys
     base = sys.argv[1] if len(sys.argv) > 1 else "evaluation/derived/full_v11"
-    print(summary_table({name: base for name in SYSTEMS}))
+    dirs = {name: base for name in SYSTEMS}
+    print(summary_table(dirs, ci="--ci" in sys.argv))
+    print()
+    print(sensitivity_tables(dirs))
 
 
 # ---------------------------------------------------------------------------
