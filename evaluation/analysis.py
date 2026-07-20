@@ -290,15 +290,6 @@ def sensitivity_tables(scored_dirs: dict[str, str | Path]) -> str:
     return "\n".join(out)
 
 
-if __name__ == "__main__":
-    import sys
-    base = sys.argv[1] if len(sys.argv) > 1 else "evaluation/derived/full_v11"
-    dirs = {name: base for name in SYSTEMS}
-    print(summary_table(dirs, ci="--ci" in sys.argv))
-    print()
-    print(sensitivity_tables(dirs))
-
-
 # ---------------------------------------------------------------------------
 # Smooth-class precision screens (added after the 2026-07-19 manual sweep of
 # ~330 stratified smooth substitutions across all ten systems). Applied to
@@ -336,3 +327,12 @@ def smooth_screens(sub: dict, gt_tokens: list[str], pred_line: str) -> str | Non
     if conf is not None and conf < 0.25:
         return "low-anchor"
     return None
+
+
+if __name__ == "__main__":
+    import sys
+    base = sys.argv[1] if len(sys.argv) > 1 else "evaluation/derived/full_v11"
+    dirs = {name: base for name in SYSTEMS}
+    print(summary_table(dirs, ci="--ci" in sys.argv))
+    print()
+    print(sensitivity_tables(dirs))
