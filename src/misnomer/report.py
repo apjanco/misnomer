@@ -19,6 +19,13 @@ class WordScore(BaseModel):
     embedding_similarity: float | None = Field(default=None, ge=0.0, le=1.0)
     composite_score: float = Field(default=0.0, ge=0.0, le=1.0)
     char_edit_distance: int = Field(default=0, ge=0)
+    # Surprisal-contrast signal (scorer_version >= 1.1). Populated on
+    # SUBSTITUTIONs when the transformer-backed LM is available and
+    # use_surprisal_contrast is enabled.
+    surprisal_gold: float | None = None       # −log P(gold_word | context), nats
+    surprisal_pred: float | None = None       # −log P(pred_word | context), nats
+    surprisal_contrast: float | None = None    # Δ = surprisal_pred − surprisal_gold
+    override_risk: float | None = Field(default=None, ge=0.0, le=1.0)  # σ(−Δ/T)
 
 
 class SemanticErrorReport(BaseModel):

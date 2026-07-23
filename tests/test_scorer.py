@@ -105,22 +105,48 @@ import pytest
     reason="requires torch and sentence-transformers",
 )
 def test_spec_examples_full_mode() -> None:
-    """Core spec claim: horse→steed (semantic) must score higher than horse→house (obvious)
-    and be classified correctly in full mode."""
+    """Core spec claim, canonical override direction (scorer >= 1.1).
+
+    The manuscript reads "steed"; the VLM's language prior substitutes the more
+    common "horse". This is the language-prior override misnomer targets, and it
+    must score higher than a character-level corruption of the same gold word
+    that makes the text *less* fluent (steed -> steer).
+
+    Note the direction: the composite signal is now *directional* (signed
+    surprisal contrast), so gold and predicted are no longer interchangeable —
+    the earlier symmetric example (gold=horse, pred=steed) tested the
+    anti-override direction and is not the phenomenon of interest.
+    """
     cfg = ScorerConfig(local_files_only=False, allow_download=True)
-    r_steed = score("The steed stood in the field", "The horse stood in the field", config=cfg)
-    r_house = score("The house stood in the field", "The horse stood in the field", config=cfg)
+    # gold = "steed"
+    r_override = score("The horse stood in the field", "The steed stood in the field", config=cfg)
+    r_charerr = score("The steer stood in the field", "The steed stood in the field", config=cfg)
 
-    assert r_steed.scorer_mode == "full", "Test requires full scorer mode"
+    assert r_override.scorer_mode == "full", "Test requires full scorer mode"
 
-    sub_steed = next(ws for ws in r_steed.word_scores if ws.alignment_type == "SUBSTITUTION")
-    sub_house = next(ws for ws in r_house.word_scores if ws.alignment_type == "SUBSTITUTION")
+    sub_override = next(ws for ws in r_override.word_scores if ws.alignment_type == "SUBSTITUTION")
+    sub_charerr = next(ws for ws in r_charerr.word_scores if ws.alignment_type == "SUBSTITUTION")
 
-    assert sub_steed.error_type == "SEMANTIC", f"horse→steed should be SEMANTIC, got {sub_steed.error_type} (sim={sub_steed.embedding_similarity:.3f})"
-    assert sub_house.error_type == "OBVIOUS", f"horse→house should be OBVIOUS, got {sub_house.error_type} (sim={sub_house.embedding_similarity:.3f})"
-    assert sub_steed.composite_score > sub_house.composite_score, (
-        f"horse→steed composite ({sub_steed.composite_score:.3f}) must exceed "
-        f"horse→house composite ({sub_house.composite_score:.3f})"
+    # The prior-override signature: predicted word is LESS surprising than gold
+    # (moved toward fluency) -> negative contrast, override_risk > 0.5.
+    assert sub_override.surprisal_contrast is not None and sub_override.surprisal_contrast < 0, (
+        f"steed->horse should have negative contrast, got {sub_override.surprisal_contrast}"
+    )
+    assert sub_override.override_risk > 0.5, (
+        f"steed->horse override_risk should exceed 0.5, got {sub_override.override_risk:.3f}"
+    )
+    # The character corruption made the text less fluent -> positive contrast,
+    # override_risk < 0.5.
+    assert sub_charerr.surprisal_contrast is not None and sub_charerr.surprisal_contrast > 0, (
+        f"steed->steer should have positive contrast, got {sub_charerr.surprisal_contrast}"
+    )
+    assert sub_charerr.override_risk < 0.5, (
+        f"steed->steer override_risk should be below 0.5, got {sub_charerr.override_risk:.3f}"
+    )
+    # Composite ordering: the fluent override outranks the less-fluent corruption.
+    assert sub_override.composite_score > sub_charerr.composite_score, (
+        f"steed->horse composite ({sub_override.composite_score:.3f}) must exceed "
+        f"steed->steer composite ({sub_charerr.composite_score:.3f})"
     )
 
 

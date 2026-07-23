@@ -63,6 +63,94 @@ class LMScorer:
             return self._transformer_perplexities(ground_truth_words)
         return self._proxy_perplexities(ground_truth_words)
 
+    def first_token_surprisal(
+        self, left_context: str, word: str
+    ) -> float | None:
+        """Surprisal (−log P) of *word*'s first token given *left_context*.
+
+        This is the reusable primitive behind the surprisal *contrast* signal.
+        Where :meth:`word_perplexities` scores every gold word in one pass and
+        returns ``exp(−logprob)`` (perplexity), this scores a *single* candidate
+        word placed after an arbitrary context and returns the raw natural-log
+        surprisal ``−logprob`` — the additive, signed quantity that contrasts
+        (``S(pred|c) − S(gold|c)``) are built from.
+
+        Only the first token whose character span overlaps *word* is used, for
+        the same reason as in :meth:`word_perplexities`: it is the token the LM
+        predicts purely from context, whereas within-word continuation tokens
+        are near-certain and would dilute the contextual signal.
+
+        Parameters
+        ----------
+        left_context:
+            The text preceding *word* (the correctly-read neighbours). May be
+            empty, in which case *word* has no predecessor to condition on.
+        word:
+            The single candidate word to score.
+
+        Returns
+        -------
+        float | None
+            ``−logprob`` (nats, ≥ 0) of *word*'s first token, or ``None`` when
+            the scorer is in frequency-proxy mode, *word* is empty, or the word
+            lands at sequence position 0 (no predecessor token to condition on,
+            e.g. empty *left_context*).
+        """
+        if self._model is None or self._tokenizer is None:
+            return None
+        if not word or not word.strip():
+            return None
+
+        import torch.nn.functional as F
+
+        left = left_context or ""
+        # A single space joins context and word so the word carries its natural
+        # leading-space token (byte-level BPE encodes the space into the word's
+        # first token). When there is no context the word starts the sequence.
+        if left and not left.endswith((" ", "\n", "\t")):
+            text = left + " " + word
+        else:
+            text = left + word
+        word_start = len(text) - len(word)
+        word_end = len(text)
+
+        enc = self._tokenizer(
+            text,
+            return_tensors="pt",
+            return_offsets_mapping=True,
+        )
+        input_ids = enc["input_ids"]
+        if input_ids.shape[1] == 0:
+            return None
+        offset_mapping = enc.get("offset_mapping")
+
+        with self._torch.no_grad():
+            outputs = self._model(input_ids)
+            logits = outputs.logits[0]
+
+        log_probs = F.log_softmax(logits, dim=-1)
+
+        seq_len = input_ids.shape[1]
+        if offset_mapping is None:
+            return None
+        offsets = offset_mapping[0].tolist()
+        # Find the FIRST token whose character span overlaps the word.
+        for tok_idx in range(seq_len):
+            tok_start, tok_end = offsets[tok_idx]
+            if tok_end > word_start and tok_start < word_end:
+                # token i's logprob is predicted from position i-1; a word's
+                # first token at sequence position 0 has no predecessor to
+                # condition on, so it carries no contextual surprisal. Scoring
+                # a later (within-word continuation) token instead would return
+                # a near-certain character continuation, not a contextual
+                # prediction — so return None rather than a misleading value.
+                if tok_idx == 0:
+                    return None
+                lp = log_probs[tok_idx - 1, input_ids[0, tok_idx]].item()
+                return -lp
+        # No token overlaps the word span.
+        return None
+
     # ------------------------------------------------------------------
     # Transformer path
     # ------------------------------------------------------------------

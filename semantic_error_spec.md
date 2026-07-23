@@ -55,7 +55,7 @@ Only `SEMANTIC` and `OBVIOUS` substitutions receive a composite error score. The
 
 ### 3.3 The Two Signals
 
-**Signal 1 Ã¢â‚¬â€ Perplexity of ground truth in context** Using a fixed internal language model, compute how surprised the model is by each ground truth word given its surrounding context. High perplexity means the correct word was contextually unlikely Ã¢â‚¬â€ the conditions under which semantic substitution is most likely to occur and hardest to catch.
+**Signal 1 — Surprisal contrast (gold vs. predicted in context)** Using a fixed internal language model, compute the first-token surprisal of *both* the ground-truth word and the predicted word under the identical ground-truth left-context, and take the signed difference `Δ = s(pred) − s(gold)`. When the model finds the misread word *more* fluent than the truth (`Δ < 0`), the language prior actively prefers the wrong word — the signature of a semantic override. This is mapped to an `override_risk = σ(−Δ / T)` in `[0, 1]`. Scoring both candidates under the same context (not the absolute perplexity of the gold word alone) is deliberate: a shared rarity term cancels, so a rare-but-correct word contributes zero risk. Absolute perplexity cannot make this distinction and systematically flags correct rare entities as false positives, because the correct word is frequently the rarer one. The legacy absolute-perplexity behaviour remains available via `use_surprisal_contrast=False`.
 
 **Signal 2 Ã¢â‚¬â€ Embedding similarity between predicted and ground truth** Using a fixed internal sentence-transformer, compute the semantic distance between the predicted word and the ground truth word. High similarity \= semantic error. Low similarity \= obvious error.
 
@@ -126,6 +126,14 @@ class WordScore:
     error\_type: str | None       \# SEMANTIC | OBVIOUS | None
 
     perplexity: float | None     \# perplexity of GT word in context
+
+    surprisal\_gold: float | None      \# first-token −logprob of GT word in context
+
+    surprisal\_pred: float | None      \# first-token −logprob of predicted word, same context
+
+    surprisal\_contrast: float | None  \# Δ = s(pred) − s(gold); < 0 = override signature
+
+    override\_risk: float | None       \# σ(−Δ / T), 0.0–1.0
 
     embedding\_similarity: float  \# cosine similarity, predicted vs GT
 
@@ -253,13 +261,13 @@ alignment:    MATCH  SUBST  MATCH  MATCH MATCH MATCH
 
 Alignment output is a list of `(predicted_word, ground_truth_word, alignment_type)` tuples passed to the scorer.
 
-### 6.2 Perplexity Computation (`models/lm.py`)
+### 6.2 Surprisal Contrast (`models/lm.py`)
 
-For each substituted word pair, the ground truth word's perplexity is computed in the context of the surrounding ground truth sentence. This requires a single forward pass over the ground truth text with the internal LM.
+For each substituted word pair the scorer computes the first-token surprisal `s(w) = −log P(first-token(w) | left-context)` of **both** the ground-truth word and the predicted word, using the identical ground-truth left-context, via `LMScorer.first_token_surprisal`. The signed contrast is `Δ = s(pred) − s(gold)`, mapped to `override_risk = σ(−Δ / T)`. Because both candidates share the same context, a common rarity term cancels: a rare word read correctly yields `Δ = 0` (zero risk) no matter how surprising it is, while a fluency-increasing misread yields `Δ < 0`. Set `use_surprisal_contrast=False` to fall back to the absolute gold-word perplexity described below.
 
 **Token-to-word aggregation:** only the *first* token in the word's span is used. The LM predicts this token purely from context — it is the token that reflects genuine contextual surprisal. Subsequent tokens in a multi-token word are within-word continuations already conditioned on the word having started; they are near-certain predictions that inflate the per-token average log-probability toward zero, deflating perplexity for longer words. Using only the first token avoids this length bias.
 
-Perplexity per word: `exp(-logprob_of_first_token)`
+Legacy leg (absolute perplexity per word): `exp(-logprob_of_first_token)`
 
 **Normalization:** raw perplexity is mapped to `[0, 1]` using an absolute log-scale ceiling of `exp(13.8) ≈ 1,000,000`. This preserves the signal for documents with a single substitution (relative min/max normalization collapses to a constant in that case) and makes scores comparable across documents.
 
@@ -277,11 +285,11 @@ High similarity (close to 1.0) \= semantic error candidate. Low similarity (clos
 
 The composite score per substituted word pair combines perplexity and embedding similarity:
 
-composite \= w1 \* normalized\_perplexity \+ w2 \* embedding\_similarity
+composite \= w1 \* override\_risk \+ w2 \* embedding\_similarity
 
 Where:
 
-- `normalized_perplexity` is `log(ppl) / log(1_000_000)`, clipped to \[0, 1\] — an absolute log-scale normalization that preserves signal for single-substitution documents and enables cross-document comparison  
+- `override_risk` is `σ(−Δ / T)`, the temperature-scaled logistic of the signed surprisal contrast `Δ = s(pred) − s(gold)` (first-token −logprob of each candidate under the shared ground-truth left-context). At `T = 1` it equals `P(pred|context) / (P(pred|context) + P(gold|context))`, the model's relative preference for the misread word. Set `use_surprisal_contrast=False` to restore the legacy leg `normalized_perplexity = log(ppl) / log(1_000_000)` clipped to `[0, 1]`  
 - `embedding_similarity` is the semantic closeness contribution (high similarity \= likely to pass human review)  
 - Default weights: `w1 = 0.4`, `w2 = 0.6` (configurable)
 
@@ -335,11 +343,12 @@ Text-only mode uses only the perplexity proxy signal. `embedding_similarity` is 
 
 Scorer versions pin both the LM and embedder model exactly:
 
-| Version | LM | Embedder |
-| :---- | :---- | :---- |
-| `1.0` | `Qwen2.5-0.5B` | `all-MiniLM-L6-v2` |
+| Version | LM | Embedder | Perplexity leg |
+| :---- | :---- | :---- | :---- |
+| `1.0` | `Qwen2.5-0.5B` | `all-MiniLM-L6-v2` | absolute perplexity of gold word |
+| `1.1` | `Qwen2.5-0.5B` | `all-MiniLM-L6-v2` | signed surprisal contrast → `override_risk` (default) |
 
-Scores computed with different versions are **not comparable**. The `scorer_version` field in every report makes this explicit. If the bundled models change, the major version increments and a migration note is published.
+Version `1.1` is the current default: it replaces the absolute-perplexity leg of the composite with the signed surprisal contrast (`override_risk`); the embedder is unchanged. Set `use_surprisal_contrast=False` to reproduce `1.0` scoring. Scores computed with different versions are **not comparable**. The `scorer_version` field in every report makes this explicit. If the bundled models change, the major version increments and a migration note is published.
 
 Users can specify a custom LM or embedder for experimental use, but doing so disables the version guarantee and is flagged in the report:
 
@@ -403,6 +412,10 @@ Model weights are downloaded on first use from HuggingFace Hub and cached locall
 | :---- | :---- |
 | High | Core implementation: aligner, scorer, classifier, report |
 | High | Test suite with known semantic error fixtures |
+
+| Medium | Edit-distance pre-gate: route real-word→real-word swaps to the semantic path and short/garbled fragments to a character-error path, so the override signal is not diluted by OCR fragments |
+
+| Medium | LLM-reader tier: adjudicate borderline swaps (and residual high-CER pages both distributional signals miss) to produce word-pair override labels for calibrating `contrast_temperature` and the operating threshold |
 | Medium | HTML highlight utility |
 | Medium | CLI |
 | Medium | Batch scoring with progress reporting |
