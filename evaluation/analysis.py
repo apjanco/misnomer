@@ -58,6 +58,7 @@ class Line:
     # raw texts, carried so the smooth screens can run through this module
     gt_tokens: list[str] = field(default_factory=list)
     pred_line: str = ""
+    insertion_ratio: float = 0.0
 
 
 @dataclass
@@ -143,7 +144,8 @@ def load_system(name: str, scored_dir: str | Path,
             if s["error_type"] in VISIBLE_DEFAULT:
                 visible += 1
             subs.append(s)
-        lines.append(Line(i, n_words, None, visible, subs, gt_tokens, pred_line))
+        lines.append(Line(i, n_words, None, visible, subs, gt_tokens, pred_line,
+                          rec.get("insertion_ratio", 0.0)))
     return SystemData(name, lines, n_scored, n_ref, n_deg, n_hal, n_sus)
 
 
@@ -216,10 +218,21 @@ def smooth_per_100_subs(data: SystemData, deadband: float = 0.0, **kw) -> float:
 
 def trap_rate(data: SystemData) -> tuple[float, int]:
     """(share of clean-looking lines containing >=1 invisible substitution,
-    number of clean-looking lines)."""
+    number of clean-looking lines).
+
+    Clean-looking = no visible substitution, no insertions, and predicted
+    word count within 1 of the reference's alphanumeric token count
+    (2026-07-24; supersedes the substitution-only definition). Without the
+    insertion/length guard, truncated stubs and insertion-borne garble
+    counted as clean — for conventional engines most of the "clean" set
+    was such lines (tesseract 129 -> 58, kraken 63 -> 58). VLM rates are
+    unchanged by the guard; their n shrinks by ~3%."""
     clean = trapped = 0
     for ln in data.lines:
         if ln.excluded or ln.visible_subs:
+            continue
+        gt_ws = sum(1 for t in ln.gt_tokens if any(c.isalnum() for c in t))
+        if ln.insertion_ratio != 0 or abs(len(ln.pred_line.split()) - gt_ws) > 1:
             continue
         clean += 1
         if any(s["error_type"] in SIEVE for s in ln.substitutions):
