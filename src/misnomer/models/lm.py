@@ -16,12 +16,21 @@ class LMScorer:
     or ``torch`` are not installed or the model is unavailable locally.
     """
 
+    _DTYPES = ("float32", "float16", "bfloat16")
+
     def __init__(self, config: ScorerConfig):
         self.config = config
         self.model_name = config.lm_model
         self._model = None
         self._tokenizer = None
         self._torch = None
+        self._device = "cpu"
+
+        # Config errors must raise, never silently degrade to the proxy.
+        if config.torch_dtype not in self._DTYPES:
+            raise ValueError(
+                f"torch_dtype must be one of {self._DTYPES}, got {config.torch_dtype!r}"
+            )
 
         try:
             import torch
@@ -31,10 +40,12 @@ class LMScorer:
             self._tokenizer = AutoTokenizer.from_pretrained(self.model_name, **kwargs)
             self._model = AutoModelForCausalLM.from_pretrained(
                 self.model_name,
-                torch_dtype=torch.float32,
+                dtype=getattr(torch, config.torch_dtype),
                 **kwargs,
             )
             self._model.eval()
+            self._device = self._resolve_device(torch, config.device)
+            self._model.to(self._device)
             self._torch = torch
         except (ImportError, OSError, ValueError) as exc:
             log.warning("LMScorer: could not load %r (%s: %s); falling back to frequency proxy.",
@@ -42,6 +53,16 @@ class LMScorer:
             self._model = None
             self._tokenizer = None
             self._torch = None
+
+    @staticmethod
+    def _resolve_device(torch, device: str) -> str:
+        if device != "auto":
+            return device
+        if torch.backends.mps.is_available():
+            return "mps"
+        if torch.cuda.is_available():
+            return "cuda"
+        return "cpu"
 
     @property
     def is_transformer_backed(self) -> bool:
@@ -55,6 +76,14 @@ class LMScorer:
     @property
     def resolved_model_name(self) -> str:
         return self.model_name if self._model is not None else "frequency-proxy"
+
+    @property
+    def resolved_device(self) -> str:
+        return self._device if self._model is not None else "none"
+
+    @property
+    def resolved_dtype(self) -> str:
+        return self.config.torch_dtype if self._model is not None else "none"
 
     def word_perplexities(self, ground_truth_words: list[str]) -> dict[int, float]:
         if not ground_truth_words:
@@ -175,8 +204,10 @@ class LMScorer:
         offset_mapping = enc.get("offset_mapping")
 
         with self._torch.no_grad():
-            outputs = self._model(input_ids)
-            logits = outputs.logits[0]  # (seq_len, vocab_size)
+            outputs = self._model(input_ids.to(self._device))
+            # float() for numerical stability under float16/bfloat16
+            # (identity under the default float32).
+            logits = outputs.logits[0].float().cpu()  # (seq_len, vocab_size)
 
         log_probs = F.log_softmax(logits, dim=-1)
 
@@ -240,6 +271,128 @@ class LMScorer:
         if logprob is None:
             return 1.0
         return math.exp(-logprob)
+
+    # ------------------------------------------------------------------
+    # Δ — the prior's preference for the substituted reading
+    # ------------------------------------------------------------------
+
+    def substitution_surprisals(
+        self,
+        ground_truth_words: list[str],
+        substitutions: dict[int, str],
+        chunk_size: int = 16,
+    ) -> dict[int, tuple[float, float] | None]:
+        """Full-word surprisals ``(s_gold, s_pred)`` per substituted position.
+
+        ``s(w) = −log P(w | c_i)`` in nats, where c_i is the ground-truth
+        prefix (words before position i) and the probability is the SUM over
+        ALL of the word's tokens, teacher-forced on the same prefix —
+        full-word scoring, never first-token-only. First-token contrasts
+        fail two ways: orthographic neighbors frequently share their opening
+        subword (``in|sure`` / ``in|jure`` — the contrast collapses to
+        exactly zero), and when tokenizations differ in granularity the
+        shorter first token carries the probability mass of every possible
+        continuation, so fragment-like openings look spuriously fluent.
+
+        Position 0 (empty prefix) is anchored on the tokenizer's BOS token,
+        falling back to EOS — the contrast then degenerates gracefully
+        toward a frequency contrast. Returns ``None`` per position in proxy
+        mode or for empty words. :meth:`substitution_deltas` and the
+        scorer's ``surprisal_contrast``/``override_risk`` fields all derive
+        from this one batched computation.
+        """
+        if not substitutions:
+            return {}
+        if self._model is None or self._tokenizer is None:
+            return {i: None for i in substitutions}
+
+        torch = self._torch
+        import torch.nn.functional as F
+
+        tok = self._tokenizer
+        anchor = tok.bos_token_id if tok.bos_token_id is not None else tok.eos_token_id
+
+        # Build one scoring entry per (position, candidate) pair.
+        # entry = (position, role, prefix_len_tokens, full_ids)
+        entries: list[tuple[int, str, int, list[int]]] = []
+        results: dict[int, tuple[float, float] | None] = {}
+        for i, predicted in substitutions.items():
+            truth = ground_truth_words[i]
+            if not predicted.strip() or not truth.strip():
+                results[i] = None
+                continue
+            prefix = " ".join(ground_truth_words[:i])
+            # Equal words (defensive; the aligner emits them as MATCH): score
+            # once and reuse for both roles, so the contrast is exactly 0.0.
+            roles = (
+                (("pred", predicted), ("truth", truth))
+                if predicted != truth
+                else (("truth", truth),)
+            )
+            for role, word in roles:
+                if prefix:
+                    p_ids = tok(prefix, add_special_tokens=False)["input_ids"]
+                    f_ids = tok(prefix + " " + word, add_special_tokens=False)["input_ids"]
+                    # Prefix stability guard: BPE pre-tokenization keeps merges
+                    # inside word boundaries, but verify rather than assume.
+                    k = 0
+                    while k < min(len(p_ids), len(f_ids)) and p_ids[k] == f_ids[k]:
+                        k += 1
+                    p_len = k
+                else:
+                    p_ids = [anchor] if anchor is not None else []
+                    f_ids = p_ids + tok(word, add_special_tokens=False)["input_ids"]
+                    p_len = len(p_ids)
+                entries.append((i, role, p_len, f_ids))
+
+        # Teacher-forced scoring, chunked; right padding is safe for causal
+        # models (padded positions are never read for real-token logprobs).
+        logprob_sums: dict[tuple[int, str], float] = {}
+        pad_id = tok.pad_token_id if tok.pad_token_id is not None else (anchor or 0)
+        for start in range(0, len(entries), chunk_size):
+            chunk = entries[start : start + chunk_size]
+            if not chunk:
+                continue
+            max_len = max(len(e[3]) for e in chunk)
+            batch = torch.full((len(chunk), max_len), pad_id, dtype=torch.long)
+            mask = torch.zeros((len(chunk), max_len), dtype=torch.long)
+            for row, (_, _, _, f_ids) in enumerate(chunk):
+                batch[row, : len(f_ids)] = torch.tensor(f_ids, dtype=torch.long)
+                mask[row, : len(f_ids)] = 1
+            with torch.no_grad():
+                out = self._model(batch.to(self._device), attention_mask=mask.to(self._device))
+                logits = out.logits.float().cpu()  # (rows, max_len, vocab)
+            log_probs = F.log_softmax(logits, dim=-1)
+            for row, (i, role, p_len, f_ids) in enumerate(chunk):
+                total = 0.0
+                # token at index j is predicted from logits at j-1; j >= 1
+                for j in range(max(p_len, 1), len(f_ids)):
+                    total += log_probs[row, j - 1, f_ids[j]].item()
+                logprob_sums[(i, role)] = total
+
+        for i in substitutions:
+            if i in results:  # degenerate cases handled above
+                continue
+            s_gold = -logprob_sums[(i, "truth")]
+            s_pred = -logprob_sums[(i, "pred")] if (i, "pred") in logprob_sums else s_gold
+            results[i] = (s_gold, s_pred)
+        return results
+
+    def substitution_deltas(
+        self,
+        ground_truth_words: list[str],
+        substitutions: dict[int, str],
+        chunk_size: int = 16,
+    ) -> dict[int, float | None]:
+        """Δ_i = log P(ŵ_i | c_i) − log P(w*_i | c_i) per substituted position.
+
+        Positive Δ: the model's prior prefers what was written over what the
+        reference attests (lectio facilior as a sign test). Derived from
+        :meth:`substitution_surprisals` as ``s_gold − s_pred``; see there for
+        the full-word scoring rationale and position-0 anchoring.
+        """
+        pairs = self.substitution_surprisals(ground_truth_words, substitutions, chunk_size)
+        return {i: (None if pair is None else pair[0] - pair[1]) for i, pair in pairs.items()}
 
     # ------------------------------------------------------------------
     # Deterministic proxy (used when transformers/torch unavailable)

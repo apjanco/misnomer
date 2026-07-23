@@ -55,7 +55,7 @@ Only `SEMANTIC` and `OBVIOUS` substitutions receive a composite error score. The
 
 ### 3.3 The Two Signals
 
-**Signal 1 — Surprisal contrast (gold vs. predicted in context)** Using a fixed internal language model, compute the first-token surprisal of *both* the ground-truth word and the predicted word under the identical ground-truth left-context, and take the signed difference `Δ = s(pred) − s(gold)`. When the model finds the misread word *more* fluent than the truth (`Δ < 0`), the language prior actively prefers the wrong word — the signature of a semantic override. This is mapped to an `override_risk = σ(−Δ / T)` in `[0, 1]`. Scoring both candidates under the same context (not the absolute perplexity of the gold word alone) is deliberate: a shared rarity term cancels, so a rare-but-correct word contributes zero risk. Absolute perplexity cannot make this distinction and systematically flags correct rare entities as false positives, because the correct word is frequently the rarer one. The legacy absolute-perplexity behaviour remains available via `use_surprisal_contrast=False`.
+**Signal 1 — Surprisal contrast (gold vs. predicted in context)** Using a fixed internal language model, compute the full-word surprisal (−log probability summed over all of the word's tokens) of *both* the ground-truth word and the predicted word under the identical ground-truth left-context, and take the signed difference `Δ = s(pred) − s(gold)`. When the model finds the misread word *more* fluent than the truth (`Δ < 0`), the language prior actively prefers the wrong word — the signature of a semantic override. This is mapped to an `override_risk = σ(−Δ / T)` in `[0, 1]`. Scoring both candidates under the same context (not the absolute perplexity of the gold word alone) is deliberate: a shared rarity term cancels, so a rare-but-correct word contributes zero risk. Absolute perplexity cannot make this distinction and systematically flags correct rare entities as false positives, because the correct word is frequently the rarer one. The legacy absolute-perplexity behaviour remains available via `use_surprisal_contrast=False`.
 
 **Signal 2 Ã¢â‚¬â€ Embedding similarity between predicted and ground truth** Using a fixed internal sentence-transformer, compute the semantic distance between the predicted word and the ground truth word. High similarity \= semantic error. Low similarity \= obvious error.
 
@@ -127,9 +127,9 @@ class WordScore:
 
     perplexity: float | None     \# perplexity of GT word in context
 
-    surprisal\_gold: float | None      \# first-token −logprob of GT word in context
+    surprisal\_gold: float | None      \# full-word −logprob of GT word in context
 
-    surprisal\_pred: float | None      \# first-token −logprob of predicted word, same context
+    surprisal\_pred: float | None      \# full-word −logprob of predicted word, same context
 
     surprisal\_contrast: float | None  \# Δ = s(pred) − s(gold); < 0 = override signature
 
@@ -263,9 +263,9 @@ Alignment output is a list of `(predicted_word, ground_truth_word, alignment_typ
 
 ### 6.2 Surprisal Contrast (`models/lm.py`)
 
-For each substituted word pair the scorer computes the first-token surprisal `s(w) = −log P(first-token(w) | left-context)` of **both** the ground-truth word and the predicted word, using the identical ground-truth left-context, via `LMScorer.first_token_surprisal`. The signed contrast is `Δ = s(pred) − s(gold)`, mapped to `override_risk = σ(−Δ / T)`. Because both candidates share the same context, a common rarity term cancels: a rare word read correctly yields `Δ = 0` (zero risk) no matter how surprising it is, while a fluency-increasing misread yields `Δ < 0`. Set `use_surprisal_contrast=False` to fall back to the absolute gold-word perplexity described below.
+For each substituted word pair the scorer computes the full-word surprisal `s(w) = −log P(w | left-context)` of **both** the ground-truth word and the predicted word, using the identical ground-truth left-context, via one batched `LMScorer.substitution_surprisals` call per document (the same computation that yields `delta`; `surprisal_contrast == −delta`). The signed contrast is `Δ = s(pred) − s(gold)`, mapped to `override_risk = σ(−Δ / T)`. Because both candidates share the same context, a common rarity term cancels: a rare word read correctly yields `Δ = 0` (zero risk) no matter how surprising it is, while a fluency-increasing misread yields `Δ < 0`. Set `use_surprisal_contrast=False` to fall back to the absolute gold-word perplexity described below.
 
-**Token-to-word aggregation:** only the *first* token in the word's span is used. The LM predicts this token purely from context — it is the token that reflects genuine contextual surprisal. Subsequent tokens in a multi-token word are within-word continuations already conditioned on the word having started; they are near-certain predictions that inflate the per-token average log-probability toward zero, deflating perplexity for longer words. Using only the first token avoids this length bias.
+**Token-to-word aggregation:** the word's log-probability is the *sum* over all of its tokens, teacher-forced on the shared context — never the first token alone, and never a per-token average. A first-token contrast fails in two ways: orthographic neighbours frequently share their opening subword, collapsing the contrast to exactly zero, and when the two candidates tokenize at different granularities the shorter first token carries the probability mass of every possible continuation, making fragment-like openings look spuriously fluent. The sum is a genuine word probability, so the contrast compares like with like; averaging would reintroduce a length bias by rewarding near-certain within-word continuations. (The *legacy* gold-only perplexity leg below is unchanged and remains first-token by design, preserving scorer-1.0 outputs.)
 
 Legacy leg (absolute perplexity per word): `exp(-logprob_of_first_token)`
 
@@ -289,7 +289,7 @@ composite \= w1 \* override\_risk \+ w2 \* embedding\_similarity
 
 Where:
 
-- `override_risk` is `σ(−Δ / T)`, the temperature-scaled logistic of the signed surprisal contrast `Δ = s(pred) − s(gold)` (first-token −logprob of each candidate under the shared ground-truth left-context). At `T = 1` it equals `P(pred|context) / (P(pred|context) + P(gold|context))`, the model's relative preference for the misread word. Set `use_surprisal_contrast=False` to restore the legacy leg `normalized_perplexity = log(ppl) / log(1_000_000)` clipped to `[0, 1]`  
+- `override_risk` is `σ(−Δ / T)`, the temperature-scaled logistic of the signed surprisal contrast `Δ = s(pred) − s(gold)` (full-word −logprob of each candidate under the shared ground-truth left-context). At `T = 1` it equals `P(pred|context) / (P(pred|context) + P(gold|context))`, the model's relative preference for the misread word. Set `use_surprisal_contrast=False` to restore the legacy leg `normalized_perplexity = log(ppl) / log(1_000_000)` clipped to `[0, 1]`  
 - `embedding_similarity` is the semantic closeness contribution (high similarity \= likely to pass human review)  
 - Default weights: `w1 = 0.4`, `w2 = 0.6` (configurable)
 

@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Derived evaluation outputs (regenerable via evaluation/rescore_iam.py)
+evaluation/derived/
+.DS_Store

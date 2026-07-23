@@ -27,6 +27,9 @@ model = [
 multilingual = [
     "sentence-transformers>=5.4.1",
 ]
+gates = [
+    "pyspellchecker>=0.8",
+]
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]
