@@ -41,6 +41,14 @@ class WordScore(BaseModel):
     # words under character-level alignment (see anchor.py); low values
     # mark pairs the aligner matched by position rather than by ink.
     anchor_confidence: float | None = None
+    # Surprisal-contrast signal (scorer_version >= 1.1). Populated on
+    # SUBSTITUTIONs when the transformer-backed LM is available and
+    # use_surprisal_contrast is enabled. Both candidates are scored under
+    # the same gold left-context, so surprisal_contrast == −delta.
+    surprisal_gold: float | None = None       # −log P(gold_word | context), nats
+    surprisal_pred: float | None = None       # −log P(pred_word | context), nats
+    surprisal_contrast: float | None = None    # Δ = surprisal_pred − surprisal_gold
+    override_risk: float | None = Field(default=None, ge=0.0, le=1.0)  # σ(−Δ/T)
 
 
 class SemanticErrorReport(BaseModel):

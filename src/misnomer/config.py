@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class ScorerConfig(BaseModel):
-    scorer_version: str = "1.0"
+    scorer_version: str = "1.1"
     lm_model: str = "Qwen/Qwen2.5-0.5B"
     embedder_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     # --- v1.1 additions (behavior gated on scorer_version, see gates_active) ---
@@ -30,6 +30,13 @@ class ScorerConfig(BaseModel):
     semantic_threshold: float = Field(default=0.35, ge=0.0, le=1.0)
     perplexity_weight: float = Field(default=0.4, ge=0.0, le=1.0)
     semantic_weight: float = Field(default=0.6, ge=0.0, le=1.0)
+    # Surprisal-contrast signal (scorer_version >= 1.1). When enabled, the
+    # perplexity leg of the composite uses the signed contrast between the
+    # predicted and gold words (routed through contrast_to_override_risk)
+    # instead of the gold-word-only normalized perplexity. Disable to restore
+    # the 1.0 gold-only behaviour for reproducibility.
+    use_surprisal_contrast: bool = True
+    contrast_temperature: float = Field(default=1.0, gt=0.0)
     # Thresholds for document-level error type classification
     hallucination_similarity_threshold: float = Field(default=0.25, ge=0.0, le=1.0)
     hallucination_substitution_rate_threshold: float = Field(default=0.5, ge=0.0, le=1.0)

@@ -46,7 +46,8 @@ print(report.obvious_error_count)  # int
 for ws in report.word_scores:
     if ws.error_type:
         print(ws.predicted_word, "→", ws.ground_truth_word,
-              ws.error_type, f"({ws.composite_score:.2f})")
+              ws.error_type, f"({ws.composite_score:.2f})",
+              f"risk={ws.override_risk:.2f}" if ws.override_risk is not None else "")
 ```
 
 ### Batch scoring
@@ -91,18 +92,26 @@ misnomer version
 
 | Signal | Method |
 |--------|--------|
-| **Perplexity** | Causal LM forward pass (default: `Qwen/Qwen2.5-0.5B`) — how surprising is the ground truth word in context? Only the first token of each word is used; within-word continuation tokens are excluded to avoid deflating perplexity for multi-token words. |
+| **Surprisal contrast** | Causal LM forward pass (default: `Qwen/Qwen2.5-0.5B`) — under the *same* ground-truth left-context, does the model prefer the misread word over the correct word? The signed contrast `Δ = s(pred) − s(gold)` (first-token −logprob of each) is negative exactly when the language prior favours the wrong word, which is the signature of a language-prior override. See "The surprisal contrast" below. |
 | **Semantic distance** | Sentence-transformer cosine similarity (default: `all-MiniLM-L6-v2`) — how close is the predicted word to the ground truth word? Words are encoded as `"A {word}."` to provide minimal sentence context; bare single-word encoding produces unreliable embeddings for short or rare words. |
 
 These combine into a composite score per substituted word pair:
 
 ```
-composite = 0.4 × normalized_perplexity + 0.6 × embedding_similarity
+composite = 0.4 × override_risk + 0.6 × embedding_similarity
 ```
 
-Perplexity is normalized on an absolute log scale (`log(ppl) / log(1_000_000)`) so that single-substitution documents retain a meaningful signal and scores are comparable across documents.
+where `override_risk = σ(−Δ / T)` maps the signed contrast into `[0, 1]` (T is `contrast_temperature`, default 1.0). At `T = 1` this is exactly the model's relative preference for the wrong word, `P(pred|context) / (P(pred|context) + P(gold|context))`.
 
-A high composite score indicates a concerning substitution: semantically close to the correct word (easy to miss) and surprising to the LM (contextually unlikely to appear by chance).
+A high composite score indicates a concerning substitution: semantically close to the correct word (easy to miss) **and** one the model actively prefers over the truth in context (a plausible override, not random noise).
+
+### The surprisal contrast
+
+Earlier versions scored the *absolute* perplexity of the ground-truth word alone. That conflates two very different situations: a rare-but-correct word (surprising, but not an error) scores the same as a genuine override. Because the correct word is often the rarer one, absolute perplexity systematically flags correct rare entities as false positives.
+
+The contrast fixes this by scoring **both** candidates under the identical left-context and taking the difference. A shared rarity term cancels, so a rare word read *correctly* contributes zero risk regardless of how surprising it is. Only when the model finds the *misread* word more fluent than the truth — the definition of a language-prior override — does the risk rise. On the project's own eval set this signal is nearly orthogonal to character edit distance (Spearman ≈ −0.15): it carries information the existing edit-distance feature does not.
+
+Set `use_surprisal_contrast=False` in `ScorerConfig` to restore the legacy absolute-perplexity leg (`log(ppl) / log(1_000_000)`, clipped to `[0, 1]`).
 
 ### Error taxonomy
 
@@ -132,9 +141,10 @@ The active mode is reported in `SemanticErrorReport.scorer_mode`. The `lm_model`
 
 Scorer versions pin both model identities exactly so scores are comparable across projects and time:
 
-| Version | LM | Embedder |
-|---------|----|----------|
-| `1.0` | `Qwen/Qwen2.5-0.5B` | `sentence-transformers/all-MiniLM-L6-v2` |
+| Version | LM | Embedder | Perplexity leg |
+|---------|----|----------|----------------|
+| `1.0` | `Qwen/Qwen2.5-0.5B` | `sentence-transformers/all-MiniLM-L6-v2` | absolute perplexity of gold word |
+| `1.1` | `Qwen/Qwen2.5-0.5B` | `sentence-transformers/all-MiniLM-L6-v2` | signed surprisal contrast → `override_risk` (default) |
 
 Specify a custom model for experimental use (disables the version guarantee):
 

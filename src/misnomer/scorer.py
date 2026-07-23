@@ -9,7 +9,7 @@ from misnomer.aligner import align_words, char_edit_distance, tokenize_words
 from misnomer.anchor import WordAnchors
 from misnomer.classifier import SpellDictionary, classify_substitution, classify_substitution_v2
 from misnomer.traditions import resolve_tradition
-from misnomer.composite import composite_score, normalize_perplexities
+from misnomer.composite import composite_score, contrast_to_override_risk, normalize_perplexities
 from misnomer.config import ScorerConfig
 from misnomer.models.embedder import Embedder
 from misnomer.models.lm import LMScorer
@@ -195,6 +195,29 @@ def _score_with_models(
             normalized_perplexity = substitution_norm_perplexities[subst_cursor]
             subst_cursor += 1
 
+            # Surprisal contrast (scorer_version >= 1.1). Both candidates are
+            # scored under the SAME gold left-context so the intrinsic rarity of
+            # the slot cancels in the difference; Δ = S(pred) − S(gold) < 0 is
+            # the language-prior-override signature. In eval mode the context is
+            # the gold prefix (available); a live/inference caller would supply
+            # the correctly-read predicted prefix instead.
+            surprisal_gold: float | None = None
+            surprisal_pred: float | None = None
+            surprisal_contrast: float | None = None
+            override_risk: float | None = None
+            # gates_active keeps scorer_version="1.0" bit-identical: without
+            # it the contrast fields populate (and the composite's perplexity
+            # leg switches to override_risk) under a pinned 1.0 config.
+            if cfg.gates_active and cfg.use_surprisal_contrast and lm.is_transformer_backed:
+                left_context = " ".join(gt_words[:position])
+                surprisal_gold = lm.first_token_surprisal(left_context, item.ground_truth_word)
+                surprisal_pred = lm.first_token_surprisal(left_context, item.predicted_word)
+                if surprisal_gold is not None and surprisal_pred is not None:
+                    surprisal_contrast = surprisal_pred - surprisal_gold
+                    override_risk = contrast_to_override_risk(
+                        surprisal_contrast, cfg.contrast_temperature
+                    )
+
             if embedder.is_model_backed:
                 similarity: float | None = embedder.similarity(
                     item.predicted_word, item.ground_truth_word
@@ -221,8 +244,12 @@ def _score_with_models(
             else:
                 error_type = None
 
+            # Perplexity leg of the composite: the signed-contrast override risk
+            # when available (word not at position 0, contrast enabled), else
+            # the gold-only normalized perplexity (scorer 1.0 behaviour).
+            perplexity_leg = override_risk if override_risk is not None else normalized_perplexity
             score_value = composite_score(
-                normalized_perplexity,
+                perplexity_leg,
                 similarity,
                 perplexity_weight=cfg.perplexity_weight,
                 semantic_weight=cfg.semantic_weight,
@@ -247,6 +274,10 @@ def _score_with_models(
                 delta=deltas.get(position) if cfg.gates_active else None,
                 context_words=position if cfg.gates_active else None,
                 anchor_confidence=confidence,
+                surprisal_gold=surprisal_gold,
+                surprisal_pred=surprisal_pred,
+                surprisal_contrast=surprisal_contrast,
+                override_risk=override_risk,
             )
             word_scores.append(ws)
             continue
