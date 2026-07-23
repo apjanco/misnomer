@@ -110,7 +110,7 @@ def test_spec_examples_full_mode() -> None:
     The manuscript reads "steed"; the VLM's language prior substitutes the more
     common "horse". This is the language-prior override misnomer targets, and it
     must score higher than a character-level corruption of the same gold word
-    that makes the text *less* fluent (steed -> steer).
+    that makes the text *less* fluent (horse -> hoarse).
 
     Note the direction: the composite signal is now *directional* (signed
     surprisal contrast), so gold and predicted are no longer interchangeable —
@@ -120,7 +120,7 @@ def test_spec_examples_full_mode() -> None:
     cfg = ScorerConfig(local_files_only=False, allow_download=True)
     # gold = "steed"
     r_override = score("The horse stood in the field", "The steed stood in the field", config=cfg)
-    r_charerr = score("The steer stood in the field", "The steed stood in the field", config=cfg)
+    r_charerr = score("The hoarse stood in the field", "The horse stood in the field", config=cfg)
 
     assert r_override.scorer_mode == "full", "Test requires full scorer mode"
 
@@ -138,15 +138,15 @@ def test_spec_examples_full_mode() -> None:
     # The character corruption made the text less fluent -> positive contrast,
     # override_risk < 0.5.
     assert sub_charerr.surprisal_contrast is not None and sub_charerr.surprisal_contrast > 0, (
-        f"steed->steer should have positive contrast, got {sub_charerr.surprisal_contrast}"
+        f"horse->hoarse should have positive contrast, got {sub_charerr.surprisal_contrast}"
     )
     assert sub_charerr.override_risk < 0.5, (
-        f"steed->steer override_risk should be below 0.5, got {sub_charerr.override_risk:.3f}"
+        f"horse->hoarse override_risk should be below 0.5, got {sub_charerr.override_risk:.3f}"
     )
     # Composite ordering: the fluent override outranks the less-fluent corruption.
     assert sub_override.composite_score > sub_charerr.composite_score, (
         f"steed->horse composite ({sub_override.composite_score:.3f}) must exceed "
-        f"steed->steer composite ({sub_charerr.composite_score:.3f})"
+        f"horse->hoarse composite ({sub_charerr.composite_score:.3f})"
     )
 
 

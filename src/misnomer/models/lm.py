@@ -276,25 +276,30 @@ class LMScorer:
     # Δ — the prior's preference for the substituted reading
     # ------------------------------------------------------------------
 
-    def substitution_deltas(
+    def substitution_surprisals(
         self,
         ground_truth_words: list[str],
         substitutions: dict[int, str],
         chunk_size: int = 16,
-    ) -> dict[int, float | None]:
-        """Δ_i = log P(ŵ_i | c_i) − log P(w*_i | c_i) per substituted position.
+    ) -> dict[int, tuple[float, float] | None]:
+        """Full-word surprisals ``(s_gold, s_pred)`` per substituted position.
 
-        c_i is the ground-truth prefix (words before position i). Each word's
-        log-probability is the SUM over all of its tokens, teacher-forced on
-        the same prefix — full-word scoring, never first-token-only:
-        orthographic neighbors frequently share their opening subword
-        (``in|sure`` / ``in|jure``), which would collapse a first-token
-        Δ to zero. Positive Δ: the model's prior prefers what was written
-        over what the page attests (lectio facilior as a sign test).
+        ``s(w) = −log P(w | c_i)`` in nats, where c_i is the ground-truth
+        prefix (words before position i) and the probability is the SUM over
+        ALL of the word's tokens, teacher-forced on the same prefix —
+        full-word scoring, never first-token-only. First-token contrasts
+        fail two ways: orthographic neighbors frequently share their opening
+        subword (``in|sure`` / ``in|jure`` — the contrast collapses to
+        exactly zero), and when tokenizations differ in granularity the
+        shorter first token carries the probability mass of every possible
+        continuation, so fragment-like openings look spuriously fluent.
 
         Position 0 (empty prefix) is anchored on the tokenizer's BOS token,
-        falling back to EOS — Δ then degenerates gracefully toward a
-        frequency contrast. Returns ``None`` per position in proxy mode.
+        falling back to EOS — the contrast then degenerates gracefully
+        toward a frequency contrast. Returns ``None`` per position in proxy
+        mode or for empty words. :meth:`substitution_deltas` and the
+        scorer's ``surprisal_contrast``/``override_risk`` fields all derive
+        from this one batched computation.
         """
         if not substitutions:
             return {}
@@ -310,17 +315,21 @@ class LMScorer:
         # Build one scoring entry per (position, candidate) pair.
         # entry = (position, role, prefix_len_tokens, full_ids)
         entries: list[tuple[int, str, int, list[int]]] = []
-        results: dict[int, float | None] = {}
+        results: dict[int, tuple[float, float] | None] = {}
         for i, predicted in substitutions.items():
             truth = ground_truth_words[i]
             if not predicted.strip() or not truth.strip():
                 results[i] = None
                 continue
-            if predicted == truth:
-                results[i] = 0.0
-                continue
             prefix = " ".join(ground_truth_words[:i])
-            for role, word in (("pred", predicted), ("truth", truth)):
+            # Equal words (defensive; the aligner emits them as MATCH): score
+            # once and reuse for both roles, so the contrast is exactly 0.0.
+            roles = (
+                (("pred", predicted), ("truth", truth))
+                if predicted != truth
+                else (("truth", truth),)
+            )
+            for role, word in roles:
                 if prefix:
                     p_ids = tok(prefix, add_special_tokens=False)["input_ids"]
                     f_ids = tok(prefix + " " + word, add_special_tokens=False)["input_ids"]
@@ -364,8 +373,26 @@ class LMScorer:
         for i in substitutions:
             if i in results:  # degenerate cases handled above
                 continue
-            results[i] = logprob_sums[(i, "pred")] - logprob_sums[(i, "truth")]
+            s_gold = -logprob_sums[(i, "truth")]
+            s_pred = -logprob_sums[(i, "pred")] if (i, "pred") in logprob_sums else s_gold
+            results[i] = (s_gold, s_pred)
         return results
+
+    def substitution_deltas(
+        self,
+        ground_truth_words: list[str],
+        substitutions: dict[int, str],
+        chunk_size: int = 16,
+    ) -> dict[int, float | None]:
+        """Δ_i = log P(ŵ_i | c_i) − log P(w*_i | c_i) per substituted position.
+
+        Positive Δ: the model's prior prefers what was written over what the
+        reference attests (lectio facilior as a sign test). Derived from
+        :meth:`substitution_surprisals` as ``s_gold − s_pred``; see there for
+        the full-word scoring rationale and position-0 anchoring.
+        """
+        pairs = self.substitution_surprisals(ground_truth_words, substitutions, chunk_size)
+        return {i: (None if pair is None else pair[0] - pair[1]) for i, pair in pairs.items()}
 
     # ------------------------------------------------------------------
     # Deterministic proxy (used when transformers/torch unavailable)

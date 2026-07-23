@@ -134,11 +134,11 @@ def test_canonical_override_negative_contrast(lm) -> None:
 @pytest.mark.skipif(not _HAS_MODEL, reason="requires torch and sentence-transformers")
 def test_less_fluent_char_corruption_positive_contrast(lm) -> None:
     """A character corruption of the gold word that reads as a less-fluent real
-    word (steed -> steer) → positive contrast → override_risk < 0.5."""
+    word (horse -> hoarse) → positive contrast → override_risk < 0.5."""
     from misnomer import score
 
     cfg = ScorerConfig(local_files_only=False, allow_download=True)
-    r = score("The steer stood in the field", "The steed stood in the field", config=cfg)
+    r = score("The hoarse stood in the field", "The horse stood in the field", config=cfg)
     sub = next(w for w in r.word_scores if w.alignment_type == "SUBSTITUTION")
     assert sub.surprisal_contrast is not None and sub.surprisal_contrast > 0
     assert sub.override_risk < 0.5

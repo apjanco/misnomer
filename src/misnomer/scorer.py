@@ -158,10 +158,17 @@ def _score_with_models(
     substitution_raw_perplexities = [gt_perplexities[i] for i in substitution_gt_indices]
     substitution_norm_perplexities = normalize_perplexities(substitution_raw_perplexities)
 
-    # v1.1: Δ per substituted position, one batched call per document.
+    # v1.1: full-word surprisals per substituted position, one batched call
+    # per document; Δ and the surprisal-contrast fields both derive from it,
+    # so delta == −surprisal_contrast by construction.
+    surprisal_pairs: dict[int, tuple[float, float] | None] = {}
     deltas: dict[int, float | None] = {}
     if cfg.gates_active and substitution_words:
-        deltas = lm.substitution_deltas(gt_words, substitution_words)
+        surprisal_pairs = lm.substitution_surprisals(gt_words, substitution_words)
+        deltas = {
+            i: (None if pair is None else pair[0] - pair[1])
+            for i, pair in surprisal_pairs.items()
+        }
 
     word_scores: list[WordScore] = []
     class_counts: Counter[str] = Counter()
@@ -198,21 +205,21 @@ def _score_with_models(
             # Surprisal contrast (scorer_version >= 1.1). Both candidates are
             # scored under the SAME gold left-context so the intrinsic rarity of
             # the slot cancels in the difference; Δ = S(pred) − S(gold) < 0 is
-            # the language-prior-override signature. In eval mode the context is
-            # the gold prefix (available); a live/inference caller would supply
-            # the correctly-read predicted prefix instead.
+            # the language-prior-override signature. Values come from the one
+            # batched full-word computation above (surprisal_contrast == −delta);
+            # segmentation events, which are alignment facts rather than
+            # readings, get no contrast — consistent with delta.
+            # The empty surprisal_pairs dict keeps a pinned scorer_version="1.0"
+            # bit-identical: fields stay None and the composite's perplexity
+            # leg falls back to the gold-only normalized perplexity.
             surprisal_gold: float | None = None
             surprisal_pred: float | None = None
             surprisal_contrast: float | None = None
             override_risk: float | None = None
-            # gates_active keeps scorer_version="1.0" bit-identical: without
-            # it the contrast fields populate (and the composite's perplexity
-            # leg switches to override_risk) under a pinned 1.0 config.
-            if cfg.gates_active and cfg.use_surprisal_contrast and lm.is_transformer_backed:
-                left_context = " ".join(gt_words[:position])
-                surprisal_gold = lm.first_token_surprisal(left_context, item.ground_truth_word)
-                surprisal_pred = lm.first_token_surprisal(left_context, item.predicted_word)
-                if surprisal_gold is not None and surprisal_pred is not None:
+            if cfg.use_surprisal_contrast:
+                pair = surprisal_pairs.get(position)
+                if pair is not None:
+                    surprisal_gold, surprisal_pred = pair
                     surprisal_contrast = surprisal_pred - surprisal_gold
                     override_risk = contrast_to_override_risk(
                         surprisal_contrast, cfg.contrast_temperature

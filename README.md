@@ -92,7 +92,7 @@ misnomer version
 
 | Signal | Method |
 |--------|--------|
-| **Surprisal contrast** | Causal LM forward pass (default: `Qwen/Qwen2.5-0.5B`) — under the *same* ground-truth left-context, does the model prefer the misread word over the correct word? The signed contrast `Δ = s(pred) − s(gold)` (first-token −logprob of each) is negative exactly when the language prior favours the wrong word, which is the signature of a language-prior override. See "The surprisal contrast" below. |
+| **Surprisal contrast** | Causal LM forward pass (default: `Qwen/Qwen2.5-0.5B`) — under the *same* ground-truth left-context, does the model prefer the misread word over the correct word? The signed contrast `Δ = s(pred) − s(gold)` (full-word −logprob of each, summed over all of the word's tokens) is negative exactly when the language prior favours the wrong word, which is the signature of a language-prior override. See "The surprisal contrast" below. |
 | **Semantic distance** | Sentence-transformer cosine similarity (default: `all-MiniLM-L6-v2`) — how close is the predicted word to the ground truth word? Words are encoded as `"A {word}."` to provide minimal sentence context; bare single-word encoding produces unreliable embeddings for short or rare words. |
 
 These combine into a composite score per substituted word pair:
@@ -144,7 +144,7 @@ Scorer versions pin both model identities exactly so scores are comparable acros
 | Version | LM | Embedder | Perplexity leg |
 |---------|----|----------|----------------|
 | `1.0` | `Qwen/Qwen2.5-0.5B` | `sentence-transformers/all-MiniLM-L6-v2` | absolute perplexity of gold word |
-| `1.1` | `Qwen/Qwen2.5-0.5B` | `sentence-transformers/all-MiniLM-L6-v2` | signed surprisal contrast → `override_risk` (default) |
+| `1.1` | `Qwen/Qwen2.5-0.5B` | `sentence-transformers/all-MiniLM-L6-v2` | signed full-word surprisal contrast → `override_risk` (default); also enables strict mode, tradition profiles, character anchoring, and per-substitution `delta` |
 
 Specify a custom model for experimental use (disables the version guarantee):
 
