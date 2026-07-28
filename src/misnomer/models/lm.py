@@ -300,6 +300,195 @@ class LMScorer:
         mode or for empty words. :meth:`substitution_deltas` and the
         scorer's ``surprisal_contrast``/``override_risk`` fields all derive
         from this one batched computation.
+
+        Implementation note (performance): earlier versions rebuilt and
+        reprocessed the ground-truth prefix from scratch for every
+        substituted word, independently, with no reuse across positions.
+        For a document of length L with S substitutions this is
+        O(S x L) token-forward work, and because positions are batched by
+        ``chunk_size`` with right-padding to the batch's longest sequence, a
+        single substitution deep in a long document could force the whole
+        batch's logits tensor to shape
+        (chunk_size x that document's full prefix length x vocab_size) --
+        observed in practice requesting a single allocation of 180+ GiB on
+        an 80GB GPU, unbounded in document length with no fix from added
+        memory. This version instead makes ONE forward pass over the full
+        ground-truth sequence (identical to :meth:`word_perplexities`),
+        which gives every position's gold-word log-probs for free from that
+        single pass's logits, and reuses that pass's key/value cache
+        (cropped back to each substitution's position, processed largest
+        position first since crop only shrinks) to score just the
+        predicted candidate's own -- typically 1-5 -- tokens per
+        substitution. Total cost is O(L) for the shared pass plus
+        O(sum of predicted-word lengths), independent of how many
+        substitutions there are or how late in the document they occur.
+        ``chunk_size`` is accepted for backward compatibility but unused by
+        this path; batching the (now tiny, bounded) incremental calls was
+        the mechanism that caused the original blowup, and is no longer
+        needed for the same performance reason. Falls back to the original
+        per-entry method (:meth:`_substitution_surprisals_legacy`) for the
+        rare cases the fast path does not cover: position 0 (no real
+        prefix; needs the BOS/EOS anchor), and inputs where a fast tokenizer
+        with offset mapping is unavailable.
+        """
+        if not substitutions:
+            return {}
+        if self._model is None or self._tokenizer is None:
+            return {i: None for i in substitutions}
+
+        torch = self._torch
+        import torch.nn.functional as F
+
+        from transformers import DynamicCache
+
+        tok = self._tokenizer
+        anchor = tok.bos_token_id if tok.bos_token_id is not None else tok.eos_token_id
+
+        results: dict[int, tuple[float, float] | None] = {}
+        pending: dict[int, str] = {}
+        for i, predicted in substitutions.items():
+            truth = ground_truth_words[i]
+            if not predicted.strip() or not truth.strip():
+                results[i] = None
+                continue
+            pending[i] = predicted
+
+        if not pending:
+            return results
+
+        text = " ".join(ground_truth_words)
+        enc = tok(text, return_tensors="pt", return_offsets_mapping=True)
+        input_ids = enc["input_ids"]
+        offset_mapping = enc.get("offset_mapping")
+        seq_len = input_ids.shape[1]
+
+        if seq_len == 0 or offset_mapping is None:
+            # Degenerate text or a slow tokenizer without offsets: the fast
+            # path needs character spans to find word/token boundaries.
+            legacy = self._substitution_surprisals_legacy(ground_truth_words, pending, chunk_size)
+            results.update(legacy)
+            return results
+
+        # Position 0 has no real prefix (needs the BOS/EOS anchor rather than
+        # a slice of this pass); rare enough to route through the legacy
+        # per-entry path rather than special-case the fast path for it.
+        zero_pos = {i: p for i, p in pending.items() if i == 0}
+        fast_pos = {i: p for i, p in pending.items() if i != 0}
+        if zero_pos:
+            results.update(self._substitution_surprisals_legacy(ground_truth_words, zero_pos, chunk_size))
+        if not fast_pos:
+            return results
+
+        with torch.no_grad():
+            cache = DynamicCache()
+            out = self._model(input_ids.to(self._device), past_key_values=cache, use_cache=True)
+            logits = out.logits[0].float().cpu()  # (seq_len, vocab_size)
+        log_probs_full = F.log_softmax(logits, dim=-1)
+
+        word_spans = self._word_char_spans(text, ground_truth_words)
+        offsets = offset_mapping[0].tolist()
+
+        # Every token index whose character span overlaps each word (not just
+        # the first, to preserve full-word scoring), in ascending order.
+        word_token_indices: list[list[int]] = [[] for _ in ground_truth_words]
+        for tok_idx in range(seq_len):
+            tok_start, tok_end = offsets[tok_idx]
+            for word_idx, (w_start, w_end) in enumerate(word_spans):
+                if tok_end > w_start and tok_start < w_end:
+                    word_token_indices[word_idx].append(tok_idx)
+
+        def gold_word_logprob(word_idx: int) -> float | None:
+            total = 0.0
+            found = False
+            for tok_idx in word_token_indices[word_idx]:
+                if tok_idx == 0:
+                    continue  # no predecessor to condition on
+                total += log_probs_full[tok_idx - 1, input_ids[0, tok_idx]].item()
+                found = True
+            return total if found else None
+
+        # Descending order: DynamicCache.crop() only shrinks in place, so
+        # processing largest position first lets every remaining position
+        # reuse the same cache object by cropping it further, with no need
+        # to copy or rebuild it per substitution.
+        for i in sorted(fast_pos, reverse=True):
+            predicted = fast_pos[i]
+            truth = ground_truth_words[i]
+            gold_lp = gold_word_logprob(i)
+            if gold_lp is None or not word_token_indices[i]:
+                # Word's span matched no token (should not happen with a
+                # well-formed offset mapping) -- fall back rather than guess.
+                results.update(self._substitution_surprisals_legacy(ground_truth_words, {i: predicted}, chunk_size))
+                continue
+            s_gold = -gold_lp
+
+            if predicted == truth:
+                results[i] = (s_gold, s_gold)
+                continue
+
+            crop_len = word_token_indices[i][0]
+            cache.crop(crop_len)
+
+            pred_ids = tok(" " + predicted, add_special_tokens=False)["input_ids"]
+            if not pred_ids:
+                results[i] = (s_gold, s_gold)
+                continue
+
+            # The first predicted token's probability is already sitting in
+            # the ORIGINAL full-pass logits: position crop_len-1 predicts
+            # whatever comes right after the prefix, gold or not -- same
+            # position gold's own first token was read from, just a
+            # different vocab column. No extra forward call needed for it,
+            # and none at all when the predicted word is a single token
+            # (the common case).
+            total_pred_lp = log_probs_full[crop_len - 1, pred_ids[0]].item()
+
+            if len(pred_ids) > 1:
+                # Only a multi-token predicted word needs the incremental
+                # branch, and only for its remaining tokens: feed pred_ids[:-1]
+                # after pred_ids[0] on the cropped cache so the model can
+                # score pred_ids[1] conditioned on prefix+pred_ids[0], etc.
+                # logits[0] from a call that starts by consuming pred_ids[0]
+                # predicts the token AFTER pred_ids[0] -- i.e. pred_ids[1] --
+                # never pred_ids[0] itself, which is why that first token is
+                # read from the original pass above instead.
+                pred_tensor = torch.tensor([pred_ids], dtype=torch.long)
+                with torch.no_grad():
+                    pred_out = self._model(pred_tensor.to(self._device), past_key_values=cache, use_cache=True)
+                    pred_logits = pred_out.logits[0].float().cpu()
+                pred_log_probs = F.log_softmax(pred_logits, dim=-1)
+                # pred_out.logits[0][k] predicts the token after having
+                # consumed pred_ids[0..k], i.e. it predicts pred_ids[k+1] --
+                # so token j (j >= 1) is scored from row j-1, the same
+                # shift-by-one convention used throughout this file.
+                for j in range(1, len(pred_ids)):
+                    total_pred_lp += pred_log_probs[j - 1, pred_ids[j]].item()
+
+                # Discard the predicted word's KV entries this call
+                # appended, so the next (smaller) position's crop sees only
+                # real ground-truth prefix, not this position's candidate
+                # branch.
+                cache.crop(crop_len)
+
+            s_pred = -total_pred_lp
+            results[i] = (s_gold, s_pred)
+
+        return results
+
+    def _substitution_surprisals_legacy(
+        self,
+        ground_truth_words: list[str],
+        substitutions: dict[int, str],
+        chunk_size: int = 16,
+    ) -> dict[int, tuple[float, float] | None]:
+        """Original per-entry implementation, kept for the rare inputs the
+        fast path in :meth:`substitution_surprisals` routes here (position 0,
+        missing offset mapping) and as the reference implementation these
+        cases are validated against. See :meth:`substitution_surprisals` for
+        why this is no longer the default: O(substitutions x document
+        length) with no cache reuse, batched in a way that lets one long
+        prefix force an unbounded single-allocation blowup for the whole
+        batch.
         """
         if not substitutions:
             return {}
