@@ -105,7 +105,22 @@ def _collect_convergence(scored_dir: Path) -> set[tuple[int, str, str]]:
 
 
 def load_system(name: str, scored_dir: str | Path,
-                gt_suspect: set | None = None) -> SystemData:
+                gt_suspect: set | None = None,
+                drop_hallucinated: bool = False) -> SystemData:
+    """Load one system's rescored lines.
+
+    drop_hallucinated (default False since 2026-08-06): the document-level
+    "hallucinated" label is a similarity test built for a VLM failure mode
+    — a fluent invented passage, where word alignment carries no meaning.
+    Applied uniformly it misfires on conventional-engine wreckage, which
+    IS positionally alignable and which the GARBLE class exists to count:
+    it removed 62% of tesseract's lines and 61% of kraken's against 0.1-2%
+    for the VLMs, so those two systems were scored on their best third
+    while the VLMs were scored on everything. Over-long output (the case
+    that genuinely breaks alignment, including reasoning leaks) is still
+    excluded by the degenerate-length rule above. Pass True to reproduce
+    the pre-2026-08-06 behaviour.
+    """
     raw, test_only = SYSTEMS[name]
     scored_dir = Path(scored_dir)
     if gt_suspect is None:
@@ -132,8 +147,9 @@ def load_system(name: str, scored_dir: str | Path,
             continue
         if rec.get("document_error_type") == "hallucinated":
             n_hal += 1
-            lines.append(Line(i, n_words, "hallucinated", 0))
-            continue
+            if drop_hallucinated:
+                lines.append(Line(i, n_words, "hallucinated", 0))
+                continue
         subs = []
         visible = 0
         for s in rec["substitutions"]:
