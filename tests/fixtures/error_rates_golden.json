@@ -1,0 +1,1507 @@
+{
+ "definition": "error-rates/1",
+ "order": [
+  "char_edits",
+  "ref_chars",
+  "word_edits",
+  "ref_words"
+ ],
+ "pairs": [
+  {
+   "predicted": "The house stood in the field.",
+   "reference": "The house stood in the field.",
+   "counts": {
+    "none": {
+     "verbatim": [
+      0,
+      29,
+      0,
+      6
+     ],
+     "content": [
+      0,
+      28,
+      0,
+      6
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      29,
+      0,
+      6
+     ],
+     "content": [
+      0,
+      28,
+      0,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "",
+   "reference": "The house stood in the field.",
+   "counts": {
+    "none": {
+     "verbatim": [
+      29,
+      29,
+      6,
+      6
+     ],
+     "content": [
+      28,
+      28,
+      6,
+      6
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      29,
+      29,
+      6,
+      6
+     ],
+     "content": [
+      28,
+      28,
+      6,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "The house stood in the field.",
+   "reference": "",
+   "counts": {
+    "none": {
+     "verbatim": [
+      29,
+      0,
+      6,
+      0
+     ],
+     "content": [
+      28,
+      0,
+      6,
+      0
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      29,
+      0,
+      6,
+      0
+     ],
+     "content": [
+      28,
+      0,
+      6,
+      0
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "",
+   "reference": "",
+   "counts": {
+    "none": {
+     "verbatim": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "content": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "content": [
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "the house stood in the field",
+   "reference": "The house stood in the field.",
+   "counts": {
+    "none": {
+     "verbatim": [
+      2,
+      29,
+      2,
+      6
+     ],
+     "content": [
+      0,
+      28,
+      0,
+      6
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      29,
+      2,
+      6
+     ],
+     "content": [
+      0,
+      28,
+      0,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "The horse stood in the field.",
+   "reference": "The house stood in the field.",
+   "counts": {
+    "none": {
+     "verbatim": [
+      1,
+      29,
+      1,
+      6
+     ],
+     "content": [
+      1,
+      28,
+      1,
+      6
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      1,
+      29,
+      1,
+      6
+     ],
+     "content": [
+      1,
+      28,
+      1,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "The old house stood in the field.",
+   "reference": "The house stood in the field.",
+   "counts": {
+    "none": {
+     "verbatim": [
+      4,
+      29,
+      1,
+      6
+     ],
+     "content": [
+      4,
+      28,
+      1,
+      6
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      4,
+      29,
+      1,
+      6
+     ],
+     "content": [
+      4,
+      28,
+      1,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "The house stood in field.",
+   "reference": "The house stood in the field.",
+   "counts": {
+    "none": {
+     "verbatim": [
+      4,
+      29,
+      1,
+      6
+     ],
+     "content": [
+      4,
+      28,
+      1,
+      6
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      4,
+      29,
+      1,
+      6
+     ],
+     "content": [
+      4,
+      28,
+      1,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "The  house\nstood\tin the field.",
+   "reference": "The house stood in the field.",
+   "counts": {
+    "none": {
+     "verbatim": [
+      0,
+      29,
+      0,
+      6
+     ],
+     "content": [
+      0,
+      28,
+      0,
+      6
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      29,
+      0,
+      6
+     ],
+     "content": [
+      0,
+      28,
+      0,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "The house stood in the field .",
+   "reference": "The house stood in the field.",
+   "counts": {
+    "none": {
+     "verbatim": [
+      1,
+      29,
+      2,
+      6
+     ],
+     "content": [
+      0,
+      28,
+      0,
+      6
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      29,
+      0,
+      6
+     ],
+     "content": [
+      0,
+      28,
+      0,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "It's a pity, he said, that you're late.",
+   "reference": "It 's a pity , he said , that you 're late .",
+   "counts": {
+    "none": {
+     "verbatim": [
+      5,
+      44,
+      10,
+      13
+     ],
+     "content": [
+      2,
+      36,
+      4,
+      10
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      39,
+      0,
+      8
+     ],
+     "content": [
+      0,
+      36,
+      0,
+      8
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "It 's a pity , he said , that you 're late .",
+   "reference": "It 's a pity , he said , that you 're late .",
+   "counts": {
+    "none": {
+     "verbatim": [
+      0,
+      44,
+      0,
+      13
+     ],
+     "content": [
+      0,
+      36,
+      0,
+      10
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      39,
+      0,
+      8
+     ],
+     "content": [
+      0,
+      36,
+      0,
+      8
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "He didn't go (at least not then).",
+   "reference": "He did n't go ( at least not then ) .",
+   "counts": {
+    "none": {
+     "verbatim": [
+      4,
+      37,
+      7,
+      11
+     ],
+     "content": [
+      1,
+      31,
+      2,
+      8
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      33,
+      0,
+      7
+     ],
+     "content": [
+      0,
+      30,
+      0,
+      7
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "He said \"No\" twice.",
+   "reference": "He said \" No \" twice .",
+   "counts": {
+    "none": {
+     "verbatim": [
+      3,
+      22,
+      5,
+      7
+     ],
+     "content": [
+      0,
+      16,
+      0,
+      4
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      21,
+      0,
+      6
+     ],
+     "content": [
+      0,
+      16,
+      0,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "it’s a change, isn’t it",
+   "reference": "it's a change , isn't it",
+   "counts": {
+    "none": {
+     "verbatim": [
+      3,
+      24,
+      4,
+      6
+     ],
+     "content": [
+      0,
+      22,
+      0,
+      5
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      23,
+      2,
+      5
+     ],
+     "content": [
+      0,
+      22,
+      0,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "“Quite so,” she said.",
+   "reference": "\" Quite so , \" she said .",
+   "counts": {
+    "none": {
+     "verbatim": [
+      6,
+      25,
+      7,
+      8
+     ],
+     "content": [
+      0,
+      17,
+      0,
+      4
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      23,
+      2,
+      6
+     ],
+     "content": [
+      0,
+      17,
+      0,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "a well-known writer",
+   "reference": "a well known writer",
+   "counts": {
+    "none": {
+     "verbatim": [
+      1,
+      19,
+      2,
+      4
+     ],
+     "content": [
+      1,
+      19,
+      2,
+      4
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      1,
+      19,
+      2,
+      4
+     ],
+     "content": [
+      1,
+      19,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "a well - known writer",
+   "reference": "a well-known writer",
+   "counts": {
+    "none": {
+     "verbatim": [
+      2,
+      19,
+      3,
+      3
+     ],
+     "content": [
+      1,
+      19,
+      2,
+      3
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      19,
+      3,
+      3
+     ],
+     "content": [
+      1,
+      19,
+      2,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "The MP spoke to the BBC.",
+   "reference": "The M P spoke to the B B C .",
+   "counts": {
+    "none": {
+     "verbatim": [
+      4,
+      28,
+      6,
+      10
+     ],
+     "content": [
+      3,
+      26,
+      5,
+      9
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      3,
+      27,
+      5,
+      9
+     ],
+     "content": [
+      3,
+      26,
+      5,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "Marks and Spencer",
+   "reference": "Marks & Spencer",
+   "counts": {
+    "none": {
+     "verbatim": [
+      3,
+      15,
+      1,
+      3
+     ],
+     "content": [
+      4,
+      13,
+      1,
+      2
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      3,
+      15,
+      1,
+      3
+     ],
+     "content": [
+      4,
+      13,
+      1,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "the ___ cat *sat* #",
+   "reference": "the cat sat",
+   "counts": {
+    "none": {
+     "verbatim": [
+      8,
+      11,
+      3,
+      3
+     ],
+     "content": [
+      0,
+      11,
+      0,
+      3
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      8,
+      11,
+      3,
+      3
+     ],
+     "content": [
+      0,
+      11,
+      0,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "They paid £4,000 in 1775.",
+   "reference": "They paid £400,000 in 1777 .",
+   "counts": {
+    "none": {
+     "verbatim": [
+      4,
+      28,
+      3,
+      6
+     ],
+     "content": [
+      3,
+      25,
+      2,
+      5
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      3,
+      27,
+      2,
+      5
+     ],
+     "content": [
+      3,
+      25,
+      2,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "The prieſts read the leſſon.",
+   "reference": "The priests read the lesson.",
+   "counts": {
+    "none": {
+     "verbatim": [
+      3,
+      28,
+      2,
+      5
+     ],
+     "content": [
+      3,
+      27,
+      2,
+      5
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      3,
+      28,
+      2,
+      5
+     ],
+     "content": [
+      3,
+      27,
+      2,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "café society",
+   "reference": "café society",
+   "counts": {
+    "none": {
+     "verbatim": [
+      0,
+      12,
+      0,
+      2
+     ],
+     "content": [
+      0,
+      12,
+      0,
+      2
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      12,
+      0,
+      2
+     ],
+     "content": [
+      0,
+      12,
+      0,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "cafe society",
+   "reference": "café society",
+   "counts": {
+    "none": {
+     "verbatim": [
+      1,
+      12,
+      1,
+      2
+     ],
+     "content": [
+      1,
+      12,
+      1,
+      2
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      1,
+      12,
+      1,
+      2
+     ],
+     "content": [
+      1,
+      12,
+      1,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "zu fur",
+   "reference": "zuͤ fuͤr",
+   "counts": {
+    "none": {
+     "verbatim": [
+      2,
+      8,
+      2,
+      2
+     ],
+     "content": [
+      2,
+      8,
+      2,
+      2
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      8,
+      2,
+      2
+     ],
+     "content": [
+      2,
+      8,
+      2,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "STRASSE und Straße",
+   "reference": "Straße und Straße",
+   "counts": {
+    "none": {
+     "verbatim": [
+      6,
+      17,
+      1,
+      3
+     ],
+     "content": [
+      2,
+      17,
+      1,
+      3
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      6,
+      17,
+      1,
+      3
+     ],
+     "content": [
+      2,
+      17,
+      1,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "dragged on ,with him",
+   "reference": "dragged on , with him",
+   "counts": {
+    "none": {
+     "verbatim": [
+      1,
+      21,
+      2,
+      5
+     ],
+     "content": [
+      0,
+      19,
+      0,
+      4
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      20,
+      2,
+      4
+     ],
+     "content": [
+      0,
+      19,
+      0,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "return... ...which shows",
+   "reference": "return ... ... which shows",
+   "counts": {
+    "none": {
+     "verbatim": [
+      2,
+      26,
+      4,
+      5
+     ],
+     "content": [
+      0,
+      18,
+      0,
+      3
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      24,
+      2,
+      3
+     ],
+     "content": [
+      0,
+      18,
+      0,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "He replied: yes; no! perhaps?",
+   "reference": "He replied : yes ; no ! perhaps ?",
+   "counts": {
+    "none": {
+     "verbatim": [
+      4,
+      33,
+      8,
+      9
+     ],
+     "content": [
+      0,
+      25,
+      0,
+      5
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      29,
+      0,
+      5
+     ],
+     "content": [
+      0,
+      25,
+      0,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "Tbe hxvse ls ar al",
+   "reference": "The house stood in the field that day",
+   "counts": {
+    "none": {
+     "verbatim": [
+      25,
+      37,
+      8,
+      8
+     ],
+     "content": [
+      25,
+      37,
+      8,
+      8
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      25,
+      37,
+      8,
+      8
+     ],
+     "content": [
+      25,
+      37,
+      8,
+      8
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "one two three four five six seven",
+   "reference": "one two three",
+   "counts": {
+    "none": {
+     "verbatim": [
+      20,
+      13,
+      4,
+      3
+     ],
+     "content": [
+      20,
+      13,
+      4,
+      3
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      20,
+      13,
+      4,
+      3
+     ],
+     "content": [
+      20,
+      13,
+      4,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "t̶a̶x̶i̶.̶ now",
+   "reference": "taxi . now",
+   "counts": {
+    "none": {
+     "verbatim": [
+      5,
+      10,
+      2,
+      3
+     ],
+     "content": [
+      4,
+      8,
+      1,
+      2
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      5,
+      9,
+      1,
+      2
+     ],
+     "content": [
+      4,
+      8,
+      1,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "ʼtis the boysʼ donʼt",
+   "reference": "'tis the boys' don't",
+   "counts": {
+    "none": {
+     "verbatim": [
+      3,
+      20,
+      3,
+      4
+     ],
+     "content": [
+      0,
+      18,
+      0,
+      4
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      3,
+      20,
+      3,
+      4
+     ],
+     "content": [
+      0,
+      18,
+      0,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "12 ½ pounds, he said⁴",
+   "reference": "12 1/2 pounds , he said",
+   "counts": {
+    "none": {
+     "verbatim": [
+      5,
+      23,
+      4,
+      6
+     ],
+     "content": [
+      4,
+      21,
+      2,
+      5
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      4,
+      22,
+      2,
+      5
+     ],
+     "content": [
+      4,
+      21,
+      2,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "yes—no in 1914–18",
+   "reference": "yes-no in 1914-18",
+   "counts": {
+    "none": {
+     "verbatim": [
+      2,
+      17,
+      2,
+      3
+     ],
+     "content": [
+      2,
+      17,
+      2,
+      3
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      17,
+      2,
+      3
+     ],
+     "content": [
+      2,
+      17,
+      2,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "b a c",
+   "reference": "a b c",
+   "counts": {
+    "none": {
+     "verbatim": [
+      2,
+      5,
+      2,
+      3
+     ],
+     "content": [
+      2,
+      5,
+      2,
+      3
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      5,
+      2,
+      3
+     ],
+     "content": [
+      2,
+      5,
+      2,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "T̈ ÉTÉ ÜBER",
+   "reference": "ẗ été über",
+   "counts": {
+    "none": {
+     "verbatim": [
+      9,
+      10,
+      3,
+      3
+     ],
+     "content": [
+      0,
+      10,
+      0,
+      3
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      9,
+      10,
+      3,
+      3
+     ],
+     "content": [
+      0,
+      10,
+      0,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "(he cried \"stop\"!) twice",
+   "reference": "( he cried \" stop \" ! ) twice",
+   "counts": {
+    "none": {
+     "verbatim": [
+      5,
+      29,
+      7,
+      9
+     ],
+     "content": [
+      0,
+      19,
+      0,
+      4
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      26,
+      0,
+      6
+     ],
+     "content": [
+      0,
+      19,
+      0,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "He said “No” twice.",
+   "reference": "He said \" No \" twice .",
+   "counts": {
+    "none": {
+     "verbatim": [
+      5,
+      22,
+      5,
+      7
+     ],
+     "content": [
+      0,
+      16,
+      0,
+      4
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      21,
+      2,
+      6
+     ],
+     "content": [
+      0,
+      16,
+      0,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "a .)a bearing ),and this",
+   "reference": "a . ) a bearing ) , and this",
+   "counts": {
+    "none": {
+     "verbatim": [
+      4,
+      28,
+      6,
+      9
+     ],
+     "content": [
+      0,
+      20,
+      0,
+      5
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      4,
+      24,
+      4,
+      5
+     ],
+     "content": [
+      0,
+      20,
+      0,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "IT'S HERE, DIDN'T YOU SEE",
+   "reference": "IT 'S HERE , DID N'T YOU SEE",
+   "counts": {
+    "none": {
+     "verbatim": [
+      3,
+      28,
+      6,
+      8
+     ],
+     "content": [
+      2,
+      25,
+      4,
+      7
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      25,
+      0,
+      5
+     ],
+     "content": [
+      0,
+      24,
+      0,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "she said 'so what' again",
+   "reference": "she said ' so what ' again",
+   "counts": {
+    "none": {
+     "verbatim": [
+      2,
+      26,
+      4,
+      7
+     ],
+     "content": [
+      0,
+      22,
+      0,
+      5
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      2,
+      26,
+      4,
+      7
+     ],
+     "content": [
+      0,
+      22,
+      0,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "predicted": "word  \n next\t one",
+   "reference": "word next one",
+   "counts": {
+    "none": {
+     "verbatim": [
+      0,
+      13,
+      0,
+      3
+     ],
+     "content": [
+      0,
+      13,
+      0,
+      3
+     ]
+    },
+    "tokenised-english": {
+     "verbatim": [
+      0,
+      13,
+      0,
+      3
+     ],
+     "content": [
+      0,
+      13,
+      0,
+      3
+     ]
+    }
+   }
+  }
+ ]
+}

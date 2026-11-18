@@ -41,7 +41,10 @@ _PATTERN = re.compile(
 
 def test_no_corpus_literals_in_src():
     offenders: list[str] = []
-    for path in sorted(SRC.rglob("*.py")):
+    # Python sources and the JSON data files (tradition profiles, reference
+    # conventions: their rules and descriptions are behaviour too). The vendored
+    # Unicode confusables table is not scanned; it legitimately names characters.
+    for path in sorted([*SRC.rglob("*.py"), *SRC.rglob("*.json")]):
         for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             match = _PATTERN.search(line)
             if match:

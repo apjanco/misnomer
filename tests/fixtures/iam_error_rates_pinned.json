@@ -1,0 +1,1465 @@
+{
+ "definition": "error-rates/1",
+ "convention": {
+  "name": "tokenised-english",
+  "version": "1.0",
+  "rules_sha256": "704165c9852111cafa95ac35ada5c660a3eb43259782e5db1a8a090871e0da4e"
+ },
+ "order": [
+  "char_edits",
+  "ref_chars",
+  "word_edits",
+  "ref_words"
+ ],
+ "tables": {
+  "own_line_set": {
+   "Qwen3-VL-8B-Instruct": {
+    "line_set": "all",
+    "lines": 10373,
+    "status": {
+     "ok": 10370,
+     "refusal-like-reference": 3
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 10370,
+      "verbatim": [
+       10678,
+       439172,
+       5866,
+       80293
+      ],
+      "content": [
+       7633,
+       423911,
+       3434,
+       77943
+      ]
+     },
+     "all_lines": {
+      "lines": 10373,
+      "verbatim": [
+       10678,
+       439312,
+       5866,
+       80320
+      ],
+      "content": [
+       7633,
+       424051,
+       3434,
+       77970
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 10370,
+      "verbatim": [
+       10678,
+       439172,
+       5866,
+       80293
+      ],
+      "content": [
+       7633,
+       423911,
+       3434,
+       77943
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 10373,
+      "verbatim": [
+       10678,
+       439312,
+       5866,
+       80320
+      ],
+      "content": [
+       7633,
+       424051,
+       3434,
+       77970
+      ]
+     }
+    }
+   },
+   "chandra": {
+    "line_set": "all",
+    "lines": 10373,
+    "status": {
+     "degenerate": 1,
+     "ok": 10369,
+     "refusal-like-reference": 3
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 10369,
+      "verbatim": [
+       12819,
+       439165,
+       6247,
+       80291
+      ],
+      "content": [
+       9096,
+       423906,
+       3811,
+       77941
+      ]
+     },
+     "all_lines": {
+      "lines": 10373,
+      "verbatim": [
+       12826,
+       439312,
+       6249,
+       80320
+      ],
+      "content": [
+       9101,
+       424051,
+       3813,
+       77970
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 10369,
+      "verbatim": [
+       12819,
+       439165,
+       6247,
+       80291
+      ],
+      "content": [
+       9096,
+       423906,
+       3811,
+       77941
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 10373,
+      "verbatim": [
+       12826,
+       439312,
+       6249,
+       80320
+      ],
+      "content": [
+       9101,
+       424051,
+       3813,
+       77970
+      ]
+     }
+    }
+   },
+   "chatgpt-gpt4o": {
+    "line_set": "all",
+    "lines": 10373,
+    "status": {
+     "degenerate": 2,
+     "empty": 1,
+     "ok": 10168,
+     "refusal": 199,
+     "refusal-like-reference": 3
+    },
+    "meta_output_lines": 4,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 10168,
+      "verbatim": [
+       17062,
+       430459,
+       8496,
+       78668
+      ],
+      "content": [
+       11756,
+       415545,
+       4746,
+       76376
+      ]
+     },
+     "all_lines": {
+      "lines": 10373,
+      "verbatim": [
+       25775,
+       439312,
+       10121,
+       80320
+      ],
+      "content": [
+       20122,
+       424051,
+       6313,
+       77970
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 10164,
+      "verbatim": [
+       16868,
+       430282,
+       8455,
+       78637
+      ],
+      "content": [
+       11569,
+       415373,
+       4705,
+       76345
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 10373,
+      "verbatim": [
+       25758,
+       439312,
+       10111,
+       80320
+      ],
+      "content": [
+       20107,
+       424051,
+       6303,
+       77970
+      ]
+     }
+    }
+   },
+   "chatgpt5": {
+    "line_set": "all",
+    "lines": 10373,
+    "status": {
+     "degenerate": 1,
+     "empty": 21,
+     "ok": 10348,
+     "refusal-like-reference": 3
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 2264,
+    "views": {
+     "answered": {
+      "lines": 10348,
+      "verbatim": [
+       13296,
+       438266,
+       7496,
+       80131
+      ],
+      "content": [
+       9172,
+       423023,
+       4299,
+       77783
+      ]
+     },
+     "all_lines": {
+      "lines": 10373,
+      "verbatim": [
+       14202,
+       439312,
+       7658,
+       80320
+      ],
+      "content": [
+       10060,
+       424051,
+       4459,
+       77970
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 10348,
+      "verbatim": [
+       13296,
+       438266,
+       7496,
+       80131
+      ],
+      "content": [
+       9172,
+       423023,
+       4299,
+       77783
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 10373,
+      "verbatim": [
+       14202,
+       439312,
+       7658,
+       80320
+      ],
+      "content": [
+       10060,
+       424051,
+       4459,
+       77970
+      ]
+     }
+    }
+   },
+   "claude-vision": {
+    "line_set": "all",
+    "lines": 10373,
+    "status": {
+     "degenerate": 3,
+     "empty": 9,
+     "ok": 10358,
+     "refusal-like-reference": 3
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 10358,
+      "verbatim": [
+       7976,
+       438701,
+       4316,
+       80215
+      ],
+      "content": [
+       5300,
+       423448,
+       2325,
+       77866
+      ]
+     },
+     "all_lines": {
+      "lines": 10373,
+      "verbatim": [
+       8447,
+       439312,
+       4394,
+       80320
+      ],
+      "content": [
+       5763,
+       424051,
+       2402,
+       77970
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 10358,
+      "verbatim": [
+       7976,
+       438701,
+       4316,
+       80215
+      ],
+      "content": [
+       5300,
+       423448,
+       2325,
+       77866
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 10373,
+      "verbatim": [
+       8447,
+       439312,
+       4394,
+       80320
+      ],
+      "content": [
+       5763,
+       424051,
+       2402,
+       77970
+      ]
+     }
+    }
+   },
+   "gemini-portkey": {
+    "line_set": "all",
+    "lines": 10373,
+    "status": {
+     "degenerate": 74,
+     "empty": 1,
+     "ok": 10295,
+     "refusal-like-reference": 3
+    },
+    "meta_output_lines": 40,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 10295,
+      "verbatim": [
+       9722,
+       436303,
+       5026,
+       79755
+      ],
+      "content": [
+       6069,
+       421195,
+       2527,
+       77440
+      ]
+     },
+     "all_lines": {
+      "lines": 10373,
+      "verbatim": [
+       12591,
+       439312,
+       5564,
+       80320
+      ],
+      "content": [
+       8785,
+       424051,
+       3030,
+       77970
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 10255,
+      "verbatim": [
+       6991,
+       434360,
+       4276,
+       79402
+      ],
+      "content": [
+       4048,
+       419362,
+       1961,
+       77115
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 10373,
+      "verbatim": [
+       11803,
+       439312,
+       5167,
+       80320
+      ],
+      "content": [
+       8597,
+       424051,
+       2789,
+       77970
+      ]
+     }
+    }
+   },
+   "tesseract": {
+    "line_set": "all",
+    "lines": 10373,
+    "status": {
+     "empty": 913,
+     "ok": 9460
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 9460,
+      "verbatim": [
+       203442,
+       406343,
+       72842,
+       74433
+      ],
+      "content": [
+       181245,
+       392194,
+       66702,
+       72210
+      ]
+     },
+     "all_lines": {
+      "lines": 10373,
+      "verbatim": [
+       236411,
+       439312,
+       78729,
+       80320
+      ],
+      "content": [
+       213102,
+       424051,
+       72462,
+       77970
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 9460,
+      "verbatim": [
+       203442,
+       406343,
+       72842,
+       74433
+      ],
+      "content": [
+       181245,
+       392194,
+       66702,
+       72210
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 10373,
+      "verbatim": [
+       236411,
+       439312,
+       78729,
+       80320
+      ],
+      "content": [
+       213102,
+       424051,
+       72462,
+       77970
+      ]
+     }
+    }
+   },
+   "kraken-mccatmus": {
+    "line_set": "all",
+    "lines": 10373,
+    "status": {
+     "empty": 1,
+     "ok": 10372
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 10372,
+      "verbatim": [
+       142907,
+       439311,
+       64123,
+       80319
+      ],
+      "content": [
+       134767,
+       424051,
+       61335,
+       77970
+      ]
+     },
+     "all_lines": {
+      "lines": 10373,
+      "verbatim": [
+       142908,
+       439312,
+       64124,
+       80320
+      ],
+      "content": [
+       134767,
+       424051,
+       61335,
+       77970
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 10372,
+      "verbatim": [
+       142907,
+       439311,
+       64123,
+       80319
+      ],
+      "content": [
+       134767,
+       424051,
+       61335,
+       77970
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 10373,
+      "verbatim": [
+       142908,
+       439312,
+       64124,
+       80320
+      ],
+      "content": [
+       134767,
+       424051,
+       61335,
+       77970
+      ]
+     }
+    }
+   },
+   "pylaia-iam": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "ok": 2915
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2915,
+      "verbatim": [
+       9318,
+       122659,
+       6024,
+       22975
+      ],
+      "content": [
+       8075,
+       117921,
+       5193,
+       22150
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       9318,
+       122659,
+       6024,
+       22975
+      ],
+      "content": [
+       8075,
+       117921,
+       5193,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2915,
+      "verbatim": [
+       9318,
+       122659,
+       6024,
+       22975
+      ],
+      "content": [
+       8075,
+       117921,
+       5193,
+       22150
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       9318,
+       122659,
+       6024,
+       22975
+      ],
+      "content": [
+       8075,
+       117921,
+       5193,
+       22150
+      ]
+     }
+    }
+   },
+   "pylaia-iam-lm": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "ok": 2915
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2915,
+      "verbatim": [
+       9412,
+       122659,
+       5902,
+       22975
+      ],
+      "content": [
+       7783,
+       117921,
+       4871,
+       22150
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       9412,
+       122659,
+       5902,
+       22975
+      ],
+      "content": [
+       7783,
+       117921,
+       4871,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2915,
+      "verbatim": [
+       9412,
+       122659,
+       5902,
+       22975
+      ],
+      "content": [
+       7783,
+       117921,
+       4871,
+       22150
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       9412,
+       122659,
+       5902,
+       22975
+      ],
+      "content": [
+       7783,
+       117921,
+       4871,
+       22150
+      ]
+     }
+    }
+   }
+  },
+  "test_split": {
+   "Qwen3-VL-8B-Instruct": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "ok": 2915
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2915,
+      "verbatim": [
+       3395,
+       122659,
+       1839,
+       22975
+      ],
+      "content": [
+       2515,
+       117921,
+       1106,
+       22150
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       3395,
+       122659,
+       1839,
+       22975
+      ],
+      "content": [
+       2515,
+       117921,
+       1106,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2915,
+      "verbatim": [
+       3395,
+       122659,
+       1839,
+       22975
+      ],
+      "content": [
+       2515,
+       117921,
+       1106,
+       22150
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       3395,
+       122659,
+       1839,
+       22975
+      ],
+      "content": [
+       2515,
+       117921,
+       1106,
+       22150
+      ]
+     }
+    }
+   },
+   "chandra": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "ok": 2915
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2915,
+      "verbatim": [
+       4200,
+       122659,
+       1982,
+       22975
+      ],
+      "content": [
+       3009,
+       117921,
+       1214,
+       22150
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       4200,
+       122659,
+       1982,
+       22975
+      ],
+      "content": [
+       3009,
+       117921,
+       1214,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2915,
+      "verbatim": [
+       4200,
+       122659,
+       1982,
+       22975
+      ],
+      "content": [
+       3009,
+       117921,
+       1214,
+       22150
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       4200,
+       122659,
+       1982,
+       22975
+      ],
+      "content": [
+       3009,
+       117921,
+       1214,
+       22150
+      ]
+     }
+    }
+   },
+   "chatgpt-gpt4o": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "ok": 2861,
+     "refusal": 54
+    },
+    "meta_output_lines": 1,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2861,
+      "verbatim": [
+       5666,
+       120422,
+       2791,
+       22561
+      ],
+      "content": [
+       3889,
+       115776,
+       1553,
+       21747
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       7903,
+       122659,
+       3205,
+       22975
+      ],
+      "content": [
+       6034,
+       117921,
+       1956,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2860,
+      "verbatim": [
+       5630,
+       120382,
+       2783,
+       22553
+      ],
+      "content": [
+       3857,
+       115739,
+       1545,
+       21739
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       7907,
+       122659,
+       3205,
+       22975
+      ],
+      "content": [
+       6039,
+       117921,
+       1956,
+       22150
+      ]
+     }
+    }
+   },
+   "chatgpt5": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "degenerate": 1,
+     "empty": 11,
+     "ok": 2903
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 731,
+    "views": {
+     "answered": {
+      "lines": 2903,
+      "verbatim": [
+       4348,
+       122120,
+       2309,
+       22878
+      ],
+      "content": [
+       3069,
+       117392,
+       1316,
+       22053
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       4887,
+       122659,
+       2406,
+       22975
+      ],
+      "content": [
+       3598,
+       117921,
+       1413,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2903,
+      "verbatim": [
+       4348,
+       122120,
+       2309,
+       22878
+      ],
+      "content": [
+       3069,
+       117392,
+       1316,
+       22053
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       4887,
+       122659,
+       2406,
+       22975
+      ],
+      "content": [
+       3598,
+       117921,
+       1413,
+       22150
+      ]
+     }
+    }
+   },
+   "claude-vision": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "degenerate": 2,
+     "empty": 2,
+     "ok": 2911
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2911,
+      "verbatim": [
+       2815,
+       122534,
+       1426,
+       22952
+      ],
+      "content": [
+       1942,
+       117803,
+       792,
+       22128
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       2940,
+       122659,
+       1449,
+       22975
+      ],
+      "content": [
+       2060,
+       117921,
+       814,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2911,
+      "verbatim": [
+       2815,
+       122534,
+       1426,
+       22952
+      ],
+      "content": [
+       1942,
+       117803,
+       792,
+       22128
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       2940,
+       122659,
+       1449,
+       22975
+      ],
+      "content": [
+       2060,
+       117921,
+       814,
+       22150
+      ]
+     }
+    }
+   },
+   "gemini-portkey": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "degenerate": 25,
+     "ok": 2890
+    },
+    "meta_output_lines": 13,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2890,
+      "verbatim": [
+       3309,
+       121718,
+       1628,
+       22800
+      ],
+      "content": [
+       2118,
+       117037,
+       836,
+       21988
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       4250,
+       122659,
+       1803,
+       22975
+      ],
+      "content": [
+       3002,
+       117921,
+       998,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2877,
+      "verbatim": [
+       2394,
+       121111,
+       1375,
+       22689
+      ],
+      "content": [
+       1433,
+       116457,
+       640,
+       21884
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       3942,
+       122659,
+       1661,
+       22975
+      ],
+      "content": [
+       2897,
+       117921,
+       906,
+       22150
+      ]
+     }
+    }
+   },
+   "tesseract": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "empty": 233,
+     "ok": 2682
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2682,
+      "verbatim": [
+       57162,
+       114673,
+       20753,
+       21517
+      ],
+      "content": [
+       50413,
+       110288,
+       18860,
+       20730
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       65148,
+       122659,
+       22211,
+       22975
+      ],
+      "content": [
+       58046,
+       117921,
+       20280,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2682,
+      "verbatim": [
+       57162,
+       114673,
+       20753,
+       21517
+      ],
+      "content": [
+       50413,
+       110288,
+       18860,
+       20730
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       65148,
+       122659,
+       22211,
+       22975
+      ],
+      "content": [
+       58046,
+       117921,
+       20280,
+       22150
+      ]
+     }
+    }
+   },
+   "kraken-mccatmus": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "ok": 2915
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2915,
+      "verbatim": [
+       40769,
+       122659,
+       18449,
+       22975
+      ],
+      "content": [
+       38048,
+       117921,
+       17477,
+       22150
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       40769,
+       122659,
+       18449,
+       22975
+      ],
+      "content": [
+       38048,
+       117921,
+       17477,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2915,
+      "verbatim": [
+       40769,
+       122659,
+       18449,
+       22975
+      ],
+      "content": [
+       38048,
+       117921,
+       17477,
+       22150
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       40769,
+       122659,
+       18449,
+       22975
+      ],
+      "content": [
+       38048,
+       117921,
+       17477,
+       22150
+      ]
+     }
+    }
+   },
+   "pylaia-iam": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "ok": 2915
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2915,
+      "verbatim": [
+       9318,
+       122659,
+       6024,
+       22975
+      ],
+      "content": [
+       8075,
+       117921,
+       5193,
+       22150
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       9318,
+       122659,
+       6024,
+       22975
+      ],
+      "content": [
+       8075,
+       117921,
+       5193,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2915,
+      "verbatim": [
+       9318,
+       122659,
+       6024,
+       22975
+      ],
+      "content": [
+       8075,
+       117921,
+       5193,
+       22150
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       9318,
+       122659,
+       6024,
+       22975
+      ],
+      "content": [
+       8075,
+       117921,
+       5193,
+       22150
+      ]
+     }
+    }
+   },
+   "pylaia-iam-lm": {
+    "line_set": "test",
+    "lines": 2915,
+    "status": {
+     "ok": 2915
+    },
+    "meta_output_lines": 0,
+    "backfilled_lines": 0,
+    "views": {
+     "answered": {
+      "lines": 2915,
+      "verbatim": [
+       9412,
+       122659,
+       5902,
+       22975
+      ],
+      "content": [
+       7783,
+       117921,
+       4871,
+       22150
+      ]
+     },
+     "all_lines": {
+      "lines": 2915,
+      "verbatim": [
+       9412,
+       122659,
+       5902,
+       22975
+      ],
+      "content": [
+       7783,
+       117921,
+       4871,
+       22150
+      ]
+     },
+     "answered_excl_meta_output": {
+      "lines": 2915,
+      "verbatim": [
+       9412,
+       122659,
+       5902,
+       22975
+      ],
+      "content": [
+       7783,
+       117921,
+       4871,
+       22150
+      ]
+     },
+     "all_lines_meta_output_failed": {
+      "lines": 2915,
+      "verbatim": [
+       9412,
+       122659,
+       5902,
+       22975
+      ],
+      "content": [
+       7783,
+       117921,
+       4871,
+       22150
+      ]
+     }
+    }
+   }
+  }
+ }
+}

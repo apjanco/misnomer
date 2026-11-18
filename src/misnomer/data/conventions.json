@@ -1,0 +1,36 @@
+{
+  "tokenised-english": {
+    "version": "1.0",
+    "description": "Reference text in which punctuation marks and clitics stand as separate tokens, as in the tagged English corpora of the Brown, LOB and Penn Treebank tradition (\"It 's a pity , he said .\"). The rules undo that layout on whichever string carries it, so that a transcription written with ordinary spacing is not charged for the reference's tokenisation. They change whitespace only: no other character is added, removed or replaced. In order: every run of whitespace becomes one space; double quotation marks (U+0022, U+201C, U+201D) standing at the edge of a word are detached from it on both strings, because the direction of a straight quotation mark cannot be decided within a line (they are never re-attached); the space before , . ; : ! ? is removed when the marks end a token, alone or followed only by closing brackets and further such marks; the space before a closing bracket and after an opening bracket is removed; the clitics 's 'll 're 'd 'm 've (any letter case, apostrophe U+0027 or U+2019) rejoin a preceding word; the Penn-style split negation n't rejoins a preceding word. The rules are applied until the text no longer changes. Single quotation marks are left as they are, because a detached one cannot be told from an apostrophe: on a comparison that counts spacing, a reference with detached single quotation marks is still charged to a system that attaches them. Typographic quotation marks are detached but not replaced by straight ones. Known limits: a quoted word equal to a clitic (he said 'Re: ...') is joined to the preceding word; spaced initialisms (\"B B C\") are not joined.",
+    "rules": [
+      [
+        "\\s+",
+        " "
+      ],
+      [
+        "\\s*((?<!\\w)[\"“”]|[\"“”](?!\\w))\\s*",
+        " \\1 "
+      ],
+      [
+        "\\s+([,.;:!?]+)(?=\\s|$|[)\\]}][,.;:!?)\\]}]*(?:\\s|$))",
+        "\\1"
+      ],
+      [
+        "\\s+([)\\]}])(?=[,.;:!?)\\]}]*(?:\\s|$))",
+        "\\1"
+      ],
+      [
+        "(?<!\\S)([(\\[{]+)\\s+",
+        "\\1"
+      ],
+      [
+        "(?i)(?:(?<=\\w)|(?<=\\w\\.))\\s+(['’](?:s|ll|re|d|m|ve))\\b(?!['’])",
+        "\\1"
+      ],
+      [
+        "(?i)(?<=\\w)\\s+(n['’]t)\\b",
+        "\\1"
+      ]
+    ]
+  }
+}
